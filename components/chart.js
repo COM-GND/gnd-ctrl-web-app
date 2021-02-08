@@ -10,18 +10,20 @@ import {
 
 import bloomingEspresso from "../profiles/blooming-espresso";
 
-export default function Chart({ liveData }) {
+export default function Chart({ liveData, profileRunnerData }) {
   // console.log(data, pressureData);
 
   const profiler = new bloomingEspresso();
 
   const profile = profiler.getProfile();
-  console.log("profile", profile);
+  //   console.log("profile", profile);
+  console.log("profileRunnerData", profileRunnerData);
   const totalSeconds = profiler.getTotalTime() / 1000;
-//   console.log("totalSeconds", totalSeconds);
-//   const timeIntervals = new Array(totalSeconds).fill(0).map((t, i) => {
-//     return { time: i * 1000 };
-//   });
+
+  //   console.log("totalSeconds", totalSeconds);
+  //   const timeIntervals = new Array(totalSeconds).fill(0).map((t, i) => {
+  //     return { time: i * 1000 };
+  //   });
 
   return (
     <div>
@@ -43,7 +45,7 @@ export default function Chart({ liveData }) {
           interval="preserveStartEnd"
           allowDecimals={false}
           type="number"
-          tickCount={Math.floor((totalSeconds-1)/5)}
+          tickCount={Math.floor((totalSeconds - 1) / 5)}
           domain={[0, totalSeconds]}
           tickFormatter={(value) => parseFloat(value / 1000).toFixed(0)}
         />
@@ -56,10 +58,20 @@ export default function Chart({ liveData }) {
           type="monotone"
           data={profile}
           dataKey="bars"
-          stroke="#ff7300"
+          stroke="rgba(255, 0, 0, .2)"
           isAnimationActive={true}
+          strokeWidth={5}
+          dot={{ stroke: 'red', strokeWidth: 2 }}
         />
-        <Line name="live-bars" id="live0bars" dataKey="bars" data={liveData} />
+        <Line name="live-bars" id="live-bars" dataKey="bars" data={liveData} />
+        <Line
+          dot={false}
+          isAnimationActive={false}
+          name="target-bars"
+          id="target-bars"
+          dataKey="bars"
+          data={profileRunnerData}
+        />
       </LineChart>
     </div>
   );

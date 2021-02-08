@@ -4,6 +4,11 @@ import Head from "next/head";
 import styles from "../styles/Home.module.css";
 
 import BluetoothConnectButton from "../components/bluetooth-connect-button";
+
+import ProfileRunner from "../components/profile-runner";
+
+import bloomingEspresso from "../profiles/blooming-espresso";
+
 const Chart = dynamic(() => import("../components/chart"), { ssr: false });
 
 // https://googlechrome.github.io/samples/web-bluetooth/discover-services-and-characteristics.html
@@ -13,21 +18,27 @@ const Chart = dynamic(() => import("../components/chart"), { ssr: false });
 export default function Home() {
   const PRESSURE_ID = 0xffe1;
 
-  const [startTime, _setStartTime] = useState(Date.now());
-  const startTimeRef = useRef(startTime);
-  const setStartTime = time => {startTimeRef.current = time;
-  _setStartTime(time)}
-  
-  const [isRunning, setIsRunning] = useState(false);
-  const [pressureData, setPressureData] = useState([{ bars: 0, t: 0 }]);
+  // const [startTime, _setStartTime] = useState(Date.now());
+  const startTime = useRef(Date.now());
+  const setStartTime = (time) => {
+    startTime.current = time;
+  };
 
+  const [isRunning, setIsRunning] = useState(false);
+  
+  const [pressureData, setPressureData] = useState([{ bars: 0, t: 0 }]);
   const [actualPressure, setActualPressure] = useState(0);
+
+  const [targetPressureData, setTargetPressureData] = useState([]);
+
   const [comGndBtDevice, setComGndBtDevice] = useState();
   const [comGndBtService, setComGndBtService] = useState();
   const [
     comGndBtPressureCharacteristic,
     setComGndBtPressureCharacteristic,
   ] = useState();
+
+  const profile = new bloomingEspresso();
 
   useEffect(async () => {
     if (!comGndBtPressureCharacteristic) {
@@ -71,9 +82,9 @@ export default function Home() {
     // console.log("val changed", event.target.value);
     setActualPressure(pressure);
     setPressureData((pressureData) => {
-      const currStartTime = startTimeRef.current;
+      const currStartTime = startTime.current;
       const t = Date.now() - currStartTime;
-      console.log('t', t, currStartTime);
+      console.log("t", t, currStartTime);
       const newPressureData = [...pressureData, { bars: pressure, t: t }];
       if (newPressureData.length > 25) {
         newPressureData.shift();
@@ -96,13 +107,23 @@ export default function Home() {
       </Head>
 
       <main className={styles.main}>
+        <ProfileRunner
+          profile={profile}
+          onStateChange={(state) => setTargetPressureData((targetPressureData) => {
+            return [...targetPressureData, state];
+          })}
+        />
         {actualPressure}
-        <Chart liveData={isRunning ? pressureData : {}} />
-        <button onClick={() => {
-          setPressureData(() => [{ bars: 0, t: 0 }]);
-          setStartTime(Date.now());
-          setIsRunning(true);
-        }}>{isRunning ? 'Restart' : 'Start'}</button>
+        <Chart liveData={isRunning ? pressureData : {}} profileRunnerData={targetPressureData}/>
+        <button
+          onClick={() => {
+            setPressureData(() => [{ bars: 0, t: 0 }]);
+            setStartTime(Date.now());
+            setIsRunning(true);
+          }}
+        >
+          {isRunning ? "Restart" : "Start"}
+        </button>
 
         <BluetoothConnectButton
           label="Connect"

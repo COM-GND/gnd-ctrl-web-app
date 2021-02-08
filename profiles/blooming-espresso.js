@@ -65,7 +65,11 @@ export default class bloomingEspresso {
 
   getStateAtTime(t) {
     const profile = this.getProfile();
+  
     const totalTime = this.getTotalTime();
+    if(t > totalTime) {
+     throw(`time ${t} is greater than the total profile duration ${totalTime}`) 
+    }
     const timePerc = t / totalTime;
     const timePolater = interpolateMonotoneX(profile.map((item) => item.t));
     const barsPolater = interpolateMonotoneX(profile.map((item) => item.bars));
