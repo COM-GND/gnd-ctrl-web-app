@@ -18,21 +18,13 @@ export default function Chart({ liveData }) {
   const profile = profiler.getProfile();
   console.log("profile", profile);
   const totalSeconds = profiler.getTotalTime() / 1000;
-  console.log("totalSeconds", totalSeconds);
+//   console.log("totalSeconds", totalSeconds);
 //   const timeIntervals = new Array(totalSeconds).fill(0).map((t, i) => {
 //     return { time: i * 1000 };
 //   });
 
   return (
     <div>
-      <button
-        onClick={() => {
-          if (recipeProfileLineRef.current) {
-          }
-        }}
-      >
-        Test
-      </button>
       <LineChart
         width={600}
         height={400}

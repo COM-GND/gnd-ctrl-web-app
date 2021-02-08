@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
 import Head from "next/head";
 import styles from "../styles/Home.module.css";
@@ -13,7 +13,12 @@ const Chart = dynamic(() => import("../components/chart"), { ssr: false });
 export default function Home() {
   const PRESSURE_ID = 0xffe1;
 
-  const [startTime, setStartTime] = useState(Date.now());
+  const [startTime, _setStartTime] = useState(Date.now());
+  const startTimeRef = useRef(startTime);
+  const setStartTime = time => {startTimeRef.current = time;
+  _setStartTime(time)}
+  
+  const [isRunning, setIsRunning] = useState(false);
   const [pressureData, setPressureData] = useState([{ bars: 0, t: 0 }]);
 
   const [actualPressure, setActualPressure] = useState(0);
@@ -63,10 +68,12 @@ export default function Home() {
     const pressure = textDecoder.decode(event.target.value.buffer);
 
     // const pressure = event.target.value.getFloat32();
-    console.log("val changed", event.target.value);
+    // console.log("val changed", event.target.value);
     setActualPressure(pressure);
     setPressureData((pressureData) => {
-      const t = Date.now() - startTime;
+      const currStartTime = startTimeRef.current;
+      const t = Date.now() - currStartTime;
+      console.log('t', t, currStartTime);
       const newPressureData = [...pressureData, { bars: pressure, t: t }];
       if (newPressureData.length > 25) {
         newPressureData.shift();
@@ -90,7 +97,12 @@ export default function Home() {
 
       <main className={styles.main}>
         {actualPressure}
-        <Chart liveData={pressureData} />
+        <Chart liveData={isRunning ? pressureData : {}} />
+        <button onClick={() => {
+          setPressureData(() => [{ bars: 0, t: 0 }]);
+          setStartTime(Date.now());
+          setIsRunning(true);
+        }}>{isRunning ? 'Restart' : 'Start'}</button>
 
         <BluetoothConnectButton
           label="Connect"
