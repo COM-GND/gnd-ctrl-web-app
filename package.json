@@ -11,11 +11,14 @@
     "d3-interpolate": "^2.0.1",
     "d3-interpolate-curve": "^1.0.2",
     "d3-shape": "^2.0.0",
+    "grommet": "^2.16.3",
     "next": "10.0.6",
     "next-pwa": "^5.0.5",
+    "polished": "^4.1.0",
     "react": "17.0.1",
     "react-dom": "17.0.1",
-    "recharts": "^2.0.4"
+    "recharts": "^2.0.4",
+    "styled-components": "^5.2.1"
   },
   "devDependencies": {
     "webpack": "4.46.0"

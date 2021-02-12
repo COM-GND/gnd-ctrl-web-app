@@ -1,4 +1,5 @@
 import react, { useState } from "react";
+import {Button} from 'grommet';
 
 export default function BluetoothConnectButton({
   onConnect = () => {},
@@ -11,7 +12,7 @@ export default function BluetoothConnectButton({
 
   return (
     <div className="bluetooth-connect-button">
-      <button
+      <Button
         onClick={async (e) => {
           if (isConnected && btDevice) {
             try {
@@ -96,7 +97,7 @@ export default function BluetoothConnectButton({
         }}
       >
         {isConnected ? "Disconnect" : "Connect"}
-      </button>
+      </Button>
     </div>
   );
 }

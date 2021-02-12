@@ -2,14 +2,16 @@ import { useState, useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
 import Head from "next/head";
 import styles from "../styles/Home.module.css";
-
+import gndCtrlTheme from "../styles/gnd-ctrl-standard-theme.js";
+import { Grommet, Box, Button, grommet } from "grommet";
+import { deepMerge } from "grommet/utils";
 import BluetoothConnectButton from "../components/bluetooth-connect-button";
-
 import ProfileRunner from "../components/profile-runner";
-
 import bloomingEspresso from "../profiles/blooming-espresso";
 
 const Chart = dynamic(() => import("../components/chart"), { ssr: false });
+
+const theme = deepMerge(grommet, gndCtrlTheme);
 
 // https://googlechrome.github.io/samples/web-bluetooth/discover-services-and-characteristics.html
 
@@ -24,12 +26,13 @@ export default function Home() {
     startTime.current = time;
   };
 
+  const [profile, setProfile] = useState(new bloomingEspresso());
   const [isRunning, setIsRunning] = useState(false);
-  
-  const [pressureData, setPressureData] = useState([{ bars: 0, t: 0 }]);
+
+  const [sensorData, updateSensorData] = useState([{ bars: 0, t: 0 }]);
   const [actualPressure, setActualPressure] = useState(0);
 
-  const [targetPressureData, setTargetPressureData] = useState([]);
+  const [profileData, setProfileData] = useState([]);
 
   const [comGndBtDevice, setComGndBtDevice] = useState();
   const [comGndBtService, setComGndBtService] = useState();
@@ -38,7 +41,7 @@ export default function Home() {
     setComGndBtPressureCharacteristic,
   ] = useState();
 
-  const profile = new bloomingEspresso();
+  const [btConnected, setBtConnected] = useState(false);
 
   useEffect(async () => {
     if (!comGndBtPressureCharacteristic) {
@@ -70,26 +73,37 @@ export default function Home() {
     };
   }, [comGndBtDevice, comGndBtService, comGndBtPressureCharacteristic]);
 
+  const timeShiftData = (data, newDatum) => {
+    // return data;
+    const allData = [...data, newDatum].map((datum, i) => {
+      return i > 0 ? Object.assign({}, datum, { t: data[i - 1].t }) : datum;
+    });
+    allData.shift();
+    return allData;
+  };
+
   const handleCharacteristicValueChanged = (event) => {
     // https://developer.mozilla.org/en-US/docs/Web/API/BluetoothRemoteGATTCharacteristic/readValue
     // readValue returns a promise for a DataView object
     // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/DataView
-    // arduino stores floats as 32bit
+    // the value is sent as an ascii byte array
     const textDecoder = new TextDecoder("ascii");
-    const pressure = textDecoder.decode(event.target.value.buffer);
+    const pressure = parseFloat(textDecoder.decode(event.target.value.buffer));
 
     // const pressure = event.target.value.getFloat32();
     // console.log("val changed", event.target.value);
     setActualPressure(pressure);
-    setPressureData((pressureData) => {
+    updateSensorData((sensorData) => {
       const currStartTime = startTime.current;
       const t = Date.now() - currStartTime;
-      console.log("t", t, currStartTime);
-      const newPressureData = [...pressureData, { bars: pressure, t: t }];
-      if (newPressureData.length > 25) {
-        newPressureData.shift();
-      }
-      return newPressureData;
+      // console.log("t", t, currStartTime);
+      const newDatum = { bars: pressure, t: t };
+      const newSensorData =
+        t > 50000
+          ? timeShiftData(sensorData, newDatum)
+          : [...sensorData, newDatum];
+
+      return newSensorData;
     });
   };
 
@@ -97,52 +111,91 @@ export default function Home() {
     setComGndBtDevice(undefined);
     setComGndBtService(undefined);
     setComGndBtPressureCharacteristic(undefined);
+    setBtConnected(false);
   };
 
   return (
-    <div className={styles.container}>
+    <Grommet full theme={theme} themeMode="dark">
       <Head>
         <title>Create Next App</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <main className={styles.main}>
-        <ProfileRunner
-          profile={profile}
-          onStateChange={(state) => setTargetPressureData((targetPressureData) => {
-            return [...targetPressureData, state];
-          })}
-        />
+      <main>
         {actualPressure}
-        <Chart liveData={isRunning ? pressureData : {}} profileRunnerData={targetPressureData}/>
-        <button
-          onClick={() => {
-            setPressureData(() => [{ bars: 0, t: 0 }]);
-            setStartTime(Date.now());
-            setIsRunning(true);
-          }}
-        >
-          {isRunning ? "Restart" : "Start"}
-        </button>
+        <Box fill="horizontal">
+          <Chart
+            liveData={isRunning ? sensorData : {}}
+            profileRunnerData={profileData}
+            timeDomain={profile.getTotalTime()}
+            recipeData={profile.getProfile()}
+          />
+        </Box>
+        <Box direction="horizontal" fill="horizontal" gap="small">
+          <ProfileRunner
+            profile={profile}
+            onStateChange={(state) => {
+              setProfileData((profileData) => {
+                return [...profileData, state];
+              });
+              // send the target value to the machine. see: https://web.dev/bluetooth/#write
+              if (comGndBtPressureCharacteristic && state.bars) {
+                // const encodedPressure = Uint8Array.of(state.bars);
+                const textDecoder = new TextDecoder("ascii");
+                const encodedPressure = textDecoder.encode(
+                  state.bars.toString()
+                );
+                try {
+                  characteristic.writeValue(encodedPressure);
+                } catch (error) {
+                  console.error("Error writing to bluetooth", error);
+                }
+              }
+            }}
+            onStart={() => {
+              updateSensorData(() => [{ bars: 0, t: 0 }]);
+              setStartTime(Date.now());
+              setIsRunning(true);
+            }}
+            onPause={() => {
+              setIsRunning(false);
+            }}
+            onStop={() => {
+              setIsRunning(false);
+              updateSensorData(() => [{ bars: 0, t: 0 }]);
+              setProfileData(() => [{ bars: 0, t: 0 }]);
+            }}
+          />
+          <Button
+            disabled={comGndBtService == undefined}
+            onClick={() => {
+              updateSensorData(() => [{ bars: 0, t: 0 }]);
+              setStartTime(Date.now());
+              setIsRunning(true);
+            }}
+          >
+            {isRunning ? "Restart" : "Monitor"}
+          </Button>
 
-        <BluetoothConnectButton
-          label="Connect"
-          onConnect={async (device, server) => {
-            try {
-              const service = await server.getPrimaryService(0xffe0);
-              setComGndBtService(service);
-              device.addEventListener(
-                "gattserverdisconnected",
-                handleBtDisconnect
-              );
-            } catch (error) {
-              console.error("Bluetooth error:", error);
-            }
-          }}
-        />
+          <BluetoothConnectButton
+            label="Connect"
+            onConnect={async (device, server) => {
+              try {
+                const service = await server.getPrimaryService(0xffe0);
+                setComGndBtService(service);
+                device.addEventListener(
+                  "gattserverdisconnected",
+                  handleBtDisconnect
+                );
+              } catch (error) {
+                console.error("Bluetooth error:", error);
+              }
+            }}
+          />
+        </Box>
       </main>
 
       <footer className={styles.footer}>GND-CTRL by COM-GND</footer>
-    </div>
+    </Grommet>
   );
 }

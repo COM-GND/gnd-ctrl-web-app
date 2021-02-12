@@ -6,66 +6,79 @@ import {
   Tooltip,
   CartesianGrid,
   Line,
+  ResponsiveContainer
 } from "recharts";
 
 import bloomingEspresso from "../profiles/blooming-espresso";
 
-export default function Chart({ liveData, profileRunnerData }) {
+export default function Chart({
+  liveData,
+  profileRunnerData,
+  recipeData,
+  timeDomain = 60,
+}) {
   // console.log(data, pressureData);
 
-  const profiler = new bloomingEspresso();
-
-  const profile = profiler.getProfile();
-  //   console.log("profile", profile);
-  console.log("profileRunnerData", profileRunnerData);
-  const totalSeconds = profiler.getTotalTime() / 1000;
-
-  //   console.log("totalSeconds", totalSeconds);
-  //   const timeIntervals = new Array(totalSeconds).fill(0).map((t, i) => {
-  //     return { time: i * 1000 };
-  //   });
-
   return (
-    <div>
+    <ResponsiveContainer width="100%" height={400}>
       <LineChart
-        width={600}
-        height={400}
-        margin={{ top: 5, right: 20, left: 10, bottom: 5 }}
+        margin={{ top: 5, right: 10, left: 10, bottom: 5 }}
       >
-        <CartesianGrid strokeDasharray="3 3" />
+        <CartesianGrid
+          vertical={false}
+          strokeWidth={1}
+          stroke={"hsla(0, 0%, 100%, .1)"}
+        />
         <YAxis
           dataKey="bars"
           domain={[0, 10]}
-          interval={1}
+          // interval="preserveStartEnd"
+          // minTickGap={10}
           type="number"
-          interval="preserveStartEnd"
+          allowDataOverflow={true}
+          axisLine={false}
+          tickCount={10}
+          width={10}
+          mirror={true}
         />
         <XAxis
           dataKey="t"
           interval="preserveStartEnd"
-          allowDecimals={false}
+          allowDecimals={true}
           type="number"
-          tickCount={Math.floor((totalSeconds - 1) / 5)}
-          domain={[0, totalSeconds]}
+          tickCount={Math.floor(timeDomain / 5000) + 1}
+          domain={[0, timeDomain]}
           tickFormatter={(value) => parseFloat(value / 1000).toFixed(0)}
         />
         {/* <Tooltip /> */}
         {/* <CartesianGrid stroke="#f5f5f5" /> */}
 
         <Line
-          name="recipe-bars"
+          name="Recipe Profile"
           id="recipe-profile"
           type="monotone"
-          data={profile}
+          data={recipeData}
           dataKey="bars"
-          stroke="rgba(255, 0, 0, .2)"
+          stroke="hsla(0, 0%, 100%, .2)"
           isAnimationActive={true}
-          strokeWidth={5}
-          dot={{ stroke: 'red', strokeWidth: 2 }}
+          strokeWidth={6}
+          dot={{ fill: "hsla(0, 0%, 100%, .5)", strokeWidth: 0, r: 3 }}
         />
-        <Line name="live-bars" id="live-bars" dataKey="bars" data={liveData} />
         <Line
+          name="Live Pressure"
+          isAnimationActive={false}
+          name="live-bars"
+          id="live-bars"
+          dataKey="bars"
+          data={liveData}
+          stroke="hsla(0, 0%, 100%, 1)"
           dot={false}
+          // dot={{ fill: "hsla(0, 0%, 100%, .5)", strokeWidth: 0, r: 4 }}
+        />
+        <Line
+          name="Target Pressure"
+          dot={{ fill: "hsla(0, 0%, 100%, .5)", strokeWidth: 0, r: 1 }}
+          stroke="hsla(0, 0%, 100%, 0)"
           isAnimationActive={false}
           name="target-bars"
           id="target-bars"
@@ -73,7 +86,7 @@ export default function Chart({ liveData, profileRunnerData }) {
           data={profileRunnerData}
         />
       </LineChart>
-    </div>
+    </ResponsiveContainer>
   );
 }
 
