@@ -32,7 +32,7 @@ export default function Chart({
         <YAxis
           dataKey="bars"
           domain={[0, 10]}
-          // interval="preserveStartEnd"
+          interval="preserveEnd"
           // minTickGap={10}
           type="number"
           allowDataOverflow={true}

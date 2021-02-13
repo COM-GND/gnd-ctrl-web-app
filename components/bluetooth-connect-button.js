@@ -1,5 +1,6 @@
 import react, { useState } from "react";
-import {Button} from 'grommet';
+import { Button } from "grommet";
+import BluetoothIcon from "../svgs/bluetooth-24px.svg";
 
 export default function BluetoothConnectButton({
   onConnect = () => {},
@@ -10,9 +11,20 @@ export default function BluetoothConnectButton({
   const [btDevice, setBtDevice] = useState();
   const [btServer, setBtServer] = useState();
 
+  const getIcon = (connected) => {};
+
   return (
     <div className="bluetooth-connect-button">
       <Button
+        plain
+        gap="xxsmall"
+        icon={
+          <BluetoothIcon
+            viewBox="0 0 24 24"
+            style={{ fill: "white", width: "16px", height: "16px" }}
+          />
+        }
+        label={isConnected ? "Disconnect" : "Connect"}
         onClick={async (e) => {
           if (isConnected && btDevice) {
             try {
@@ -24,11 +36,11 @@ export default function BluetoothConnectButton({
             }
           } else if (!isConnected && btDevice) {
             // permission has already been given to access paired device. reconnect.
+            // https://developer.mozilla.org/en-US/docs/Web/API/BluetoothRemoteGATTServer/connect
             const server = await btDevice.gatt.connect();
             setIsConnected(true);
             setBtServer(server);
             onConnect(btDevice, server);
-
           } else {
             // manual user input is required to give permission to access device.
             console.log("connect", e, navigator.bluetooth);
@@ -96,7 +108,7 @@ export default function BluetoothConnectButton({
           }
         }}
       >
-        {isConnected ? "Disconnect" : "Connect"}
+        {/* {isConnected ? "Disconnect" : "Connect"} */}
       </Button>
     </div>
   );

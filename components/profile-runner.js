@@ -62,7 +62,7 @@ export default function ProfileRunner({
   }, []);
 
   return (
-    <Box direction="horizontal" gap="small">
+    <Box direction="row" gap="small">
       <Text>{isRunning ? getRunningTime() / 1000 : 0}</Text>
       <Button
         onClick={() => {

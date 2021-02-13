@@ -123,6 +123,7 @@ export default function Home() {
 
       <main>
         {actualPressure}
+        
         <Box fill="horizontal">
           <Chart
             liveData={isRunning ? sensorData : {}}
@@ -131,7 +132,7 @@ export default function Home() {
             recipeData={profile.getProfile()}
           />
         </Box>
-        <Box direction="horizontal" fill="horizontal" gap="small">
+        <Box direction="row" fill="horizontal" gap="small">
           <ProfileRunner
             profile={profile}
             onStateChange={(state) => {

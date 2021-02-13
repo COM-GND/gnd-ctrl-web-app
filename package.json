@@ -8,6 +8,7 @@
     "start": "next start"
   },
   "dependencies": {
+    "@svgr/webpack": "^5.5.0",
     "d3-interpolate": "^2.0.1",
     "d3-interpolate-curve": "^1.0.2",
     "d3-shape": "^2.0.0",
