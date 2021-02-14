@@ -12,8 +12,8 @@ import {
 import bloomingEspresso from "../profiles/blooming-espresso";
 
 export default function Chart({
-  liveData,
-  profileRunnerData,
+  sensorDataHistory,
+  profileDataHistory,
   recipeData,
   timeDomain = 60,
 }) {
@@ -70,7 +70,7 @@ export default function Chart({
           name="live-bars"
           id="live-bars"
           dataKey="bars"
-          data={liveData}
+          data={sensorDataHistory}
           stroke="hsla(0, 0%, 100%, 1)"
           dot={false}
           // dot={{ fill: "hsla(0, 0%, 100%, .5)", strokeWidth: 0, r: 4 }}
@@ -83,7 +83,7 @@ export default function Chart({
           name="target-bars"
           id="target-bars"
           dataKey="bars"
-          data={profileRunnerData}
+          data={profileDataHistory}
         />
       </LineChart>
     </ResponsiveContainer>

@@ -4,7 +4,7 @@ import {Box, Button, Text} from 'grommet';
 export default function ProfileRunner({
   profile,
   liveData,
-  onStateChange = () => {},
+  onChange = () => {},
   onStart = () => {},
   onPause = () => {},
   onStop = () => {},
@@ -42,9 +42,9 @@ export default function ProfileRunner({
     setTimer(Date.now());
     if (isRunningRef.current) {
       const runningTime = getRunningTime();
-      if(runningTime < profile.getTotalTime()){
+      if(runningTime < profile.getTotalMs()){
         const state = profile.getStateAtTime(runningTime);
-        onStateChange(state);
+        onChange(state);
       } else if(isRunningRef.current) {
         setIsRunning(false);
         // onPause();

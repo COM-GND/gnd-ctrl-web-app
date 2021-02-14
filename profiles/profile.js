@@ -83,9 +83,9 @@ export default class profile {
   }
 
   /**
-   * Get the profiles total length, in seconds
+   * Get the profiles total length, in miliseconds
    */
-  getTotalTime() {
+  getTotalMs() {
     const profile = this.getProfile();
     const totalTime = profile[profile.length - 1].t;
     return totalTime;
@@ -99,7 +99,7 @@ export default class profile {
   getStateAtTime(t) {
     const profile = this.getProfile();
 
-    const totalTime = this.getTotalTime();
+    const totalTime = this.getTotalMs();
     if (t > totalTime) {
       throw `time ${t} is greater than the total profile duration ${totalTime}`;
     }
