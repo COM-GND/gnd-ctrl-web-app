@@ -22,6 +22,7 @@ export default function Profiler({
   const [profile, setProfile] = useState(new bloomingEspresso());
   const [profileTotalMs, setProfileTotalMs] = useState(profile.getTotalMs());
   const [profileRecipe, setProfileRecipe] = useState([]);
+  const [playState, setPlayState] = useState("stop");
   const [isRunning, setIsRunning] = useState(false);
   const [profileDataHistory, updateProfileDataHistory] = useState([]);
   const [sensorDataHistory, updateSensorDataHistory] = useState([
@@ -62,7 +63,7 @@ export default function Profiler({
 
   return (
     <Box direction="column" fill="horizontal">
-      <Box fill="horizontal">
+      <Box fill="horizontal" pad="small">
         <Chart
           sensorDataHistory={sensorDataHistory}
           profileDataHistory={profileDataHistory}
@@ -70,6 +71,7 @@ export default function Profiler({
           recipeData={profile.getProfile()}
         />
       </Box>
+      <Box pad="small">
       <ProfileRunner
         profile={profile}
         onChange={(state) => {
@@ -93,7 +95,7 @@ export default function Profiler({
           //   }
         }}
         onStart={() => {
-          updateSensorDataHistory([{ bars: 0, t: 0 }]);
+          //updateSensorDataHistory([{ bars: 0, t: 0 }]);
           setStartTime(Date.now());
           setIsRunning(true);
           onStart();
@@ -101,6 +103,9 @@ export default function Profiler({
         onPause={() => {
           setIsRunning(false);
           onPause();
+        }}
+        onUnPause={() => {
+            setIsRunning(true);
         }}
         onStop={() => {
           setIsRunning(false);
@@ -110,6 +115,7 @@ export default function Profiler({
           onStop();
         }}
       />
+      </Box>
     </Box>
   );
 }

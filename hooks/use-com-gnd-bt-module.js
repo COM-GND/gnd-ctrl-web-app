@@ -13,10 +13,10 @@ export default function useComGndModule(btDevice, sensorName) {
   const [targetValue, setTargetValue] = useState();
   const [targetValueTimeStamp, setTargetValueTimestamp] = useState();
 
-  const serviceId = 0xffe0;
+  const serviceId = "8fc1ceca-b162-4401-9607-c8ac21383e4e";
   const characteristics = {
     pressure: {
-      id: 0xffe1,
+      id: "c14f18ef-4797-439e-a54f-498ba680291d",
       type: "float",
     },
   };
@@ -31,13 +31,12 @@ export default function useComGndModule(btDevice, sensorName) {
    */
   useEffect(async () => {
     if (isConnected && btCharacteristic && targetValue) {
-
-      // TODO - encoding might be different if value is not a float. 
+      // TODO - encoding might be different if value is not a float.
       const textEncoder = new TextEncoder();
       const encodedValue = textEncoder.encode(targetValue);
 
       try {
-        console.log('set pressure', targetValue);
+        console.log("set pressure", targetValue);
         await btCharacteristic.writeValue(encodedValue);
         // clear after settings
         setTargetValue(undefined);
@@ -53,12 +52,17 @@ export default function useComGndModule(btDevice, sensorName) {
   useEffect(async () => {
     function handleCharacteristicValueChanged(event) {
       let value;
+      console.log("update:", event.target.value.buffer);
+
       if (characteristics[sensorName].type === "float") {
         // decode float value
-        const textDecoder = new TextDecoder("ascii");
-        value = parseFloat(textDecoder.decode(event.target.value.buffer));
+        // const textDecoder = new TextDecoder("ascii");
+        // value = parseFloat(textDecoder.decode(event.target.value.buffer));
+        value = new Float32Array(event.target.value.buffer);
       } else {
         value = event.target.value.buffer;
+        console.log("update:", event.target.value.buffer);
+
       }
 
       const timeStamp = Date.now();
@@ -79,22 +83,32 @@ export default function useComGndModule(btDevice, sensorName) {
         // const comGndBtService = await comGndBtServer.getPrimaryService(serviceId);
 
         if (comGndBtService && !btCharacteristic) {
-          console.log("getCharacteristic");
+          console.log("getCharacteristic", characteristics[sensorName].id);
           const characteristic = await comGndBtService.getCharacteristic(
             characteristics[sensorName].id
           );
-          setBtCharacteristic(characteristic);
-          if (!notificationsStarted) {
-            console.log("startNotifications");
-            characteristic.startNotifications();
-            setNotificationsStarted(true);
+          if (characteristic) {
+            setBtCharacteristic(characteristic);
+            if (!notificationsStarted) {
+              console.log("startNotifications");
+              try {
+                await characteristic.startNotifications();
+              } catch (err) {
+                console.error("Bluetooth error (startNotifications): ", err, characteristic.properties);
+              }
+              setNotificationsStarted(true);
+            }
+            console.log("add characteristicvaluechanged");
+            try {
+              characteristic.addEventListener(
+                "characteristicvaluechanged",
+                handleCharacteristicValueChanged
+              );
+            } catch (err) {
+              console.error("Bluetooth error (addEventListener characteristicvaluechanged): ", err);
+            }
+            setBtCharacteristic(characteristic);
           }
-          console.log("add characteristicvaluechanged");
-          characteristic.addEventListener(
-            "characteristicvaluechanged",
-            handleCharacteristicValueChanged
-          );
-          setBtCharacteristic(characteristic);
         }
       } catch (error) {
         console.error("Bluetooth Error", error);

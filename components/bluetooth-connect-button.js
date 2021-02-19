@@ -49,10 +49,10 @@ export default function BluetoothConnectButton({
               device = await navigator.bluetooth.requestDevice({
                 filters: [
                   {
-                    name: "DSD TECH",
+                    name: "COM-GND Espresso",
                   },
                 ],
-                optionalServices: [0xffe0, 0xffe1],
+                optionalServices: ['8fc1ceca-b162-4401-9607-c8ac21383e4e'],
               });
             } catch (error) {
               console.error(error);

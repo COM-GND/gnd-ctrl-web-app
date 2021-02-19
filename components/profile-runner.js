@@ -1,90 +1,133 @@
 import React, { useState, useRef, useEffect } from "react";
-import {Box, Button, Text} from 'grommet';
+import { Box, Button, Text } from "grommet";
+import PlayIcon from "../svgs/play_arrow-24px.svg";
+import StopIcon from "../svgs/stop-24px.svg";
+import PauseIcon from "../svgs/pause-24px.svg";
 
 export default function ProfileRunner({
   profile,
   liveData,
   onChange = () => {},
   onStart = () => {},
+  onUnpause = () => {},
   onPause = () => {},
   onStop = () => {},
 }) {
   const interval = 250; // update frequency in MS
 
-  const [isRunning, _setIsRunning] = useState(false);
-  const isRunningRef = useRef(isRunning);
-  const setIsRunning = (flag) => {
-    isRunningRef.current = flag;
-    _setIsRunning(flag);
+  const [runState, _setRunState] = useState('stop');
+  const runStateRef = useRef(runState);
+  const setRunState = (state) => {
+    runStateRef.current = state;
+    _setRunState(state);
   };
-  const [timer, _setTimer] = useState(0);
+  
+  // timer keeps the absolute time. 
+  const [timer, _setTimer] = useState(null);
   const timerRef = useRef(timer);
-
-  const [startTime, _setStartTime] = useState(Date.now());
-  const startTimeRef = useRef(startTime);
-
   const setTimer = (time) => {
     timerRef.current = time;
     _setTimer(time);
   };
 
-  const setStartTime = (timer) => {
-    startTimeRef.current = timer;
-    _setStartTime(timer);
+  // runTime keeps the relative run-time of the profile. 
+  const [runTime, _setRunTime] = useState(0);
+  const runTimeRef = useRef(runTime);
+  const setRunTime = (time) => {
+    runTimeRef.current = time;
+    _setRunTime(time);
+  }
+
+  // keeps the offset time of when the run was started
+  const [startTime, _setStartTime] = useState(null);
+  const startTimeRef = useRef(startTime);
+  const setStartTime = (time) => {
+    startTimeRef.current = time;
+    _setStartTime(time);
   };
 
   const getRunningTime = () => {
-    const time = timerRef.current - startTimeRef.current;
-    return time > 0 ? time : 0;
+    if(runTime.current && timerRef.current) {
+      const time = startTimeRef.current ? timerRef.current - startTimeRef.current : 0;
+      return time > 0 ? time : 0;
+    }
+    return 0;
   };
 
   const handleTick = () => {
-    setTimer(Date.now());
-    if (isRunningRef.current) {
-      const runningTime = getRunningTime();
-      if(runningTime < profile.getTotalMs()){
-        const state = profile.getStateAtTime(runningTime);
+    const tickLength = Date.now() - timerRef.current;
+    setTimer(timerRef.current + tickLength);
+    if (runStateRef.current === "play") {
+      setRunTime(runTimeRef.current + tickLength);
+      // const runningTime = getRunningTime();
+      // console.log('tck', startTimeRef.current, timerRef.current) ;
+      if (runTimeRef.current < profile.getTotalMs()) {
+        const state = profile.getStateAtTime(runTimeRef.current);
+        console.log('state', state);
         onChange(state);
-      } else if(isRunningRef.current) {
-        setIsRunning(false);
-        // onPause();
+      } else {
+        // setRunState("stop");
+        // onStop();
       }
-     
     }
   };
 
   useEffect(() => {
     const callbackId = window.setInterval(handleTick, interval);
     return () => {
-      console.log('clearInterval');
+      console.log("clearInterval");
       clearInterval(callbackId);
     };
   }, []);
 
   return (
-    <Box direction="row" gap="small">
-      <Text>{isRunning ? getRunningTime() / 1000 : 0}</Text>
+    <Box direction="row" gap="xsmall">
+      {/* <Text>{runState ? getRunningTime() / 1000 : 0}</Text> */}
       <Button
-        onClick={() => {
-          setStartTime(timer);
-          if (!isRunning) {
-            onStart();
-          } else {
-            onPause();
-          }
-          setIsRunning(!isRunning);
+        hoverIndicator={{
+          color: "white",
+          opacity: 0.1,
         }}
-      >
-        {isRunning ? "Pause" : "Start"}
-      </Button>
-      <Button
         onClick={() => {
-          setIsRunning(false);
+          if (runState === "play") {
+            setRunState("pause");
+            onPause();
+          } else if(runState === 'pause') {
+            setRunState("play");
+            onUnpause();
+          } else {
+            setRunState("play");
+            setStartTime(Date.now());
+            onStart();
+          }
+        }}
+        icon={
+          runState === "play" ? (
+            <PauseIcon
+              viewBox="0 0 24 24"
+              style={{ fill: "white", width: "16px", height: "16px" }}
+            />
+          ) : (
+            <PlayIcon
+              viewBox="0 0 24 24"
+              style={{ fill: "white", width: "16px", height: "16px" }}
+            />
+          )
+        }
+      />
+      <Button
+        disabled={runState === "stop"}
+        onClick={() => {
+          setRunState("stop");
           onStop();
         }}
-      >
-        Stop
-      </Button>
+        icon={
+          <StopIcon
+            viewBox="0 0 24 24"
+            style={{ fill: "white", width: "16px", height: "16px" }}
+          />
+        }
+      />
     </Box>
   );
 }

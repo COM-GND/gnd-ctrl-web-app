@@ -6,8 +6,8 @@ const theme = {
     focus: {
       outline: {
         color: {
-          dark: "green",
-          light: "red"
+          dark: "grey ",
+          light: "whitesmoke"
         }
       }
     }

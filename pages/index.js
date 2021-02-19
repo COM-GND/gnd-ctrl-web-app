@@ -152,7 +152,7 @@ export default function Home() {
             onConnect={async (device, server) => {
               try {
                 setComGndBtDevice(device);
-                const service = await server.getPrimaryService(0xffe0);
+                const service = await server.getPrimaryService("8fc1ceca-b162-4401-9607-c8ac21383e4e");
                 setComGndBtService(service);
                 device.addEventListener(
                   "gattserverdisconnected",
