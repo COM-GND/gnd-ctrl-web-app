@@ -1,10 +1,12 @@
+![COM GND Logo](https://raw.githubusercontent.com/COM-GND/com-gnd-espresso/main/docs/com-gnd_logo_left-lock.svg)
+
 # GND-CTRL 
 
 GND-CTRL is an experimental web app for controlling the [COM-GND Espresso](https://github.com/COM-GND/espresso) Open Source Hardware project. It connects to the COM-GND control hardware module via Bluetooth and allows for advanced shot profiling. 
 
 This project is in alpha stage and under ongoing development - use with caution. 
 
-GND-CTRL relies on the experimental Web Bluetooth API. The api currently has (limited support)[https://caniuse.com/web-bluetooth] and this app has developed and tested only for use with the Chrome browser. 
+GND-CTRL relies on the experimental Web Bluetooth API. The api currently has [limited support](https://caniuse.com/web-bluetooth) and this app has been developed and tested for use with the Chrome browser. On iOS, Neither Chrome nor Safari currently support Web Bluetooth, but there are a number of alternative browsers (e.g. [Webble](https://apps.apple.com/us/app/webble/id1193531073)) available and designed for this purpose.  
 
 ## Creating Custom Shot Profiles
 
@@ -28,6 +30,17 @@ yarn dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
+
+### Using https to test the app on your local LAN.
+
+The Bluetooth web API is only available over `https` or `localhost`.
+
+If you want to test the app with another device on your local LAN (such as an iphone), you will you need to create a self-signed ssl certificate for the node server. 
+
+On OS X, you can follow this [tutorial](https://matthewhoelter.com/2019/10/21/how-to-setup-https-on-your-local-development-environment-localhost-in-minutes.html) to generate a set of certifcates with [mkcert](https://github.com/FiloSottile/mkcert).
+
+---
+
 You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
 
 [API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.js`.
@@ -35,20 +48,9 @@ You can start editing the page by modifying `pages/index.js`. The page auto-upda
 The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
 
 
-### Using https to test the app on your local LAN.
 
-The Bluetooth web API is only available over `https` or `localhost`.
+Update the `https-server.js` file with your certifcate file paths and run:
 
-If you want to test the app with another device  on your local LAN (such as an iphone), you will you need to create a self-signed ssl certificate for the node server. 
-
-The `gen-ssl-cert.sh` shell script has been added to make generating certificates easier. It is based on this [tutorial](https://medium.com/responsetap-engineering/nextjs-https-for-a-local-dev-server-98bb441eabd7).
-
-You will also need to update your hosts file (on OS X, you can find it at `/private/etc/hosts`) and add:
-```
-[your local lan IP] gnd-ctrl.test
-```
-
-run
 ```
 yarn https-dev
 ```

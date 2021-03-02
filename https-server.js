@@ -18,9 +18,9 @@ const app = next({ dev, dir: __dirname });
 const handle = app.getRequestHandler();
 
 var options = {
-  key: fs.readFileSync("gnd-ctrl-test.key"),
-  cert: fs.readFileSync("gnd-ctrl-test.crt"),
-  // ca: [fs.readFileSync('/Users/erik/Library/Application Support/mkcert/rootCA.pem')]
+  key: fs.readFileSync("./localhost+5-key.pem"),
+  cert: fs.readFileSync("./localhost+5.pem"),
+  ca: [fs.readFileSync('~/Library/Application Support/mkcert/rootCA.pem')]
 };
 
 app.prepare().then(() => {
