@@ -12,7 +12,7 @@ GND-CTRL relies on the experimental Web Bluetooth API. The api currently has [li
 
 Profiles are stored in the `/profiles` directory. Each profile is a javascript class that extends the `profile` base class. 
 
-Because the profile file is written in javascript, the shot can be profiled with flexibility and conditional design. See the `blooming-espresso.js` file a simple example of the api. 
+Because the profile file is written in javascript, the shot can be profiled with flexibility and conditional design. See the `blooming-espresso.js` file for a simple example of the api. 
 
 More information to come...
 
@@ -39,6 +39,15 @@ If you want to test the app with another device on your local LAN (such as an ip
 
 On OS X, you can follow this [tutorial](https://matthewhoelter.com/2019/10/21/how-to-setup-https-on-your-local-development-environment-localhost-in-minutes.html) to generate a set of certifcates with [mkcert](https://github.com/FiloSottile/mkcert).
 
+
+Update the `https-server.js` file with your certifcate file paths and run:
+
+```
+yarn https-dev
+```
+
+And open your `.local` address (eg. https://my-notebook.local:3000) from any device on your LAN. 
+
 ---
 
 You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
@@ -49,13 +58,6 @@ The `pages/api` directory is mapped to `/api/*`. Files in this directory are tre
 
 
 
-Update the `https-server.js` file with your certifcate file paths and run:
-
-```
-yarn https-dev
-```
-
-And open `https://gnd-ctrl.test:3000` from any device on your LAN. 
 
 ### Learn More
 
