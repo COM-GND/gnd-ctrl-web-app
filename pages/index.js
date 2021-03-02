@@ -3,7 +3,7 @@ import dynamic from "next/dynamic";
 import Head from "next/head";
 import styles from "../styles/Home.module.css";
 import gndCtrlTheme from "../styles/gnd-ctrl-standard-theme.js";
-import { Grommet, Box, Button, grommet } from "grommet";
+import { Grommet, Main, Grid, Box, Button, grommet } from "grommet";
 import { deepMerge } from "grommet/utils";
 import BluetoothConnectButton from "../components/bluetooth-connect-button";
 import useComGndBtIsConnected from "../hooks/use-com-gnd-bt-is-connected";
@@ -16,7 +16,6 @@ const theme = deepMerge(grommet, gndCtrlTheme);
 // console.log('conect', navigator.bluetooth);
 
 export default function Home() {
-
   // const [startTime, _setStartTime] = useState(Date.now());
   const startTime = useRef(Date.now());
   const setStartTime = (time) => {
@@ -26,8 +25,6 @@ export default function Home() {
   const [isRunning, setIsRunning] = useState(false);
 
   const [sensorData, updateSensorData] = useState([{ bars: 0, t: 0 }]);
-
-  const [profileData, setProfileData] = useState([]);
 
   const [comGndBtDevice, setComGndBtDevice] = useState();
   const [comGndBtService, setComGndBtService] = useState();
@@ -88,21 +85,23 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <main>
-
-        <Profiler 
-          comGndBtDevice={comGndBtDevice}
-        />
-        {/* <Box fill="horizontal">
-          <Chart
-            liveData={isRunning ? sensorData : {}}
-            profileRunnerData={profileData}
-            timeDomain={profile.getTotalMs()}
-            recipeData={profile.getProfile()}
-          />
-        </Box> */}
-        <Box direction="row" fill="horizontal" gap="small">
-          {/* <ProfileRunner
+      <Grid
+        fill
+        rows={["auto", "flex", "auto", "auto"]}
+        columns={["full"]}
+        areas={[
+          ['header'],
+          ['main'],
+          ['controls'],
+          ['footer']
+        ]}
+      >
+        <Box gridArea="header">Header</Box>
+        <Box fill={true} border={true} gridArea="main" overflow="hidden">
+          <Profiler comGndBtDevice={comGndBtDevice} />
+        </Box>
+        <Box gridArea="controls" direction="row" fill="horizontal" gap="small">
+            {/* <ProfileRunner
             profile={profile}
             onChange={(state) => {
               setProfileData((profileData) => {
@@ -136,37 +135,40 @@ export default function Home() {
               setProfileData(() => [{ bars: 0, t: 0 }]);
             }}
           /> */}
-          <Button
-            disabled={comGndBtService == undefined}
-            onClick={() => {
-              updateSensorData(() => [{ bars: 0, t: 0 }]);
-              setStartTime(Date.now());
-              setIsRunning(true);
-            }}
-          >
-            {isRunning ? "Restart" : "Monitor"}
-          </Button>
+            <Button
+              disabled={comGndBtService == undefined}
+              onClick={() => {
+                updateSensorData(() => [{ bars: 0, t: 0 }]);
+                setStartTime(Date.now());
+                setIsRunning(true);
+              }}
+            >
+              {isRunning ? "Restart" : "Monitor"}
+            </Button>
 
-          <BluetoothConnectButton
-            label="Connect"
-            onConnect={async (device, server) => {
-              try {
-                setComGndBtDevice(device);
-                const service = await server.getPrimaryService("8fc1ceca-b162-4401-9607-c8ac21383e4e");
-                setComGndBtService(service);
-                device.addEventListener(
-                  "gattserverdisconnected",
-                  handleBtDisconnect
-                );
-              } catch (error) {
-                console.error("Bluetooth error:", error);
-              }
-            }}
-          />
+            <BluetoothConnectButton
+              label="Connect"
+              onConnect={async (device, server) => {
+                try {
+                  setComGndBtDevice(device);
+                  const service = await server.getPrimaryService(
+                    "8fc1ceca-b162-4401-9607-c8ac21383e4e"
+                  );
+                  setComGndBtService(service);
+                  device.addEventListener(
+                    "gattserverdisconnected",
+                    handleBtDisconnect
+                  );
+                } catch (error) {
+                  console.error("Bluetooth error:", error);
+                }
+              }}
+            />
+          </Box>
+        <Box gridArea="footer" border={true}>
+          GND-CTRL by COM-GND
         </Box>
-      </main>
-
-      <footer className={styles.footer}>GND-CTRL by COM-GND</footer>
+      </Grid>
     </Grommet>
   );
 }

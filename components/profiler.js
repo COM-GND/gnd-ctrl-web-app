@@ -1,6 +1,6 @@
 import dynamic from "next/dynamic";
 import { useState, useEffect, useRef } from "react";
-import { Box, Button } from "grommet";
+import { Box, Button, Grid } from "grommet";
 import useComGndBtIsConnected from "../hooks/use-com-gnd-bt-is-connected";
 import ProfileRunner from "./profile-runner.js";
 import bloomingEspresso from "../profiles/blooming-espresso";
@@ -16,7 +16,7 @@ export default function Profiler({
   onStop = () => {},
   onEnd = () => {},
 }) {
-  const [startTime, setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(0);
   const startTimeRef = useRef(startTime);
 
   const [profile, setProfile] = useState(new bloomingEspresso());
@@ -49,7 +49,11 @@ export default function Profiler({
     }
 
     if (pressure) {
+      
       const now = Date.now();
+      if(startTime === 0) {
+        setStartTime(now)
+      }
       const t = now - startTime;
       updateSensorDataHistory((history) => {
         let newSensorDataHistory = [...history, { t: t, bars: pressure }];
@@ -62,8 +66,15 @@ export default function Profiler({
   }, [pressure, pressureTimeStamp, profileTotalMs, startTime]);
 
   return (
-    <Box direction="column" fill="horizontal">
-      <Box fill="horizontal" pad="small">
+    <Grid
+      direction="column"
+      fill={true}
+      border={true}
+      areas={[["main"], ["controls"]]}
+      rows={["flex", "auto"]}
+      columns={["auto"]}
+    >
+      <Box fill="horizontal" pad="small" gridArea="main">
         <Chart
           sensorDataHistory={sensorDataHistory}
           profileDataHistory={profileDataHistory}
@@ -71,51 +82,51 @@ export default function Profiler({
           recipeData={profile.getProfile()}
         />
       </Box>
-      <Box pad="small">
-      <ProfileRunner
-        profile={profile}
-        onChange={(state) => {
-          updateProfileDataHistory((profileDataHistory) => {
-            return [...profileDataHistory, state];
-          });
-          if (state.bars) {
-            setPressure(state.bars);
-          }
+      <Box pad={{top: 0, horizontal: "small"}} gridArea="controls">
+        <ProfileRunner
+          profile={profile}
+          onChange={(state) => {
+            updateProfileDataHistory((profileDataHistory) => {
+              return [...profileDataHistory, state];
+            });
+            if (state.bars) {
+              setPressure(state.bars);
+            }
 
-          // send the target value to the machine. see: https://web.dev/bluetooth/#write
-          //   if (comGndBtPressureCharacteristic && state.bars) {
-          //     // const encodedPressure = Uint8Array.of(state.bars);
-          //     const textDecoder = new TextDecoder("ascii");
-          //     const encodedPressure = textDecoder.encode(state.bars.toString());
-          //     try {
-          //       characteristic.writeValue(encodedPressure);
-          //     } catch (error) {
-          //       console.error("Error writing to bluetooth", error);
-          //     }
-          //   }
-        }}
-        onStart={() => {
-          //updateSensorDataHistory([{ bars: 0, t: 0 }]);
-          setStartTime(Date.now());
-          setIsRunning(true);
-          onStart();
-        }}
-        onPause={() => {
-          setIsRunning(false);
-          onPause();
-        }}
-        onUnPause={() => {
+            // send the target value to the machine. see: https://web.dev/bluetooth/#write
+            //   if (comGndBtPressureCharacteristic && state.bars) {
+            //     // const encodedPressure = Uint8Array.of(state.bars);
+            //     const textDecoder = new TextDecoder("ascii");
+            //     const encodedPressure = textDecoder.encode(state.bars.toString());
+            //     try {
+            //       characteristic.writeValue(encodedPressure);
+            //     } catch (error) {
+            //       console.error("Error writing to bluetooth", error);
+            //     }
+            //   }
+          }}
+          onStart={() => {
+            //updateSensorDataHistory([{ bars: 0, t: 0 }]);
+            setStartTime(Date.now());
             setIsRunning(true);
-        }}
-        onStop={() => {
-          setIsRunning(false);
-          setStartTime(Date.now());
-          updateSensorDataHistory(() => [{ bars: 0, t: 0 }]);
-          updateProfileDataHistory(() => [{ bars: 0, t: 0 }]);
-          onStop();
-        }}
-      />
+            onStart();
+          }}
+          onPause={() => {
+            setIsRunning(false);
+            onPause();
+          }}
+          onUnPause={() => {
+            setIsRunning(true);
+          }}
+          onStop={() => {
+            setIsRunning(false);
+            setStartTime(Date.now());
+            updateSensorDataHistory(() => [{ bars: 0, t: 0 }]);
+            updateProfileDataHistory(() => [{ bars: 0, t: 0 }]);
+            onStop();
+          }}
+        />
       </Box>
-    </Box>
+    </Grid>
   );
 }

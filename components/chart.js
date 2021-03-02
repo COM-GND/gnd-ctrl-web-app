@@ -20,7 +20,7 @@ export default function Chart({
   // console.log(data, pressureData);
 
   return (
-    <ResponsiveContainer width="100%" height={400}>
+    <ResponsiveContainer width="100%" height="100%">
       <LineChart
         margin={{ top: 5, right: 10, left: 10, bottom: 5 }}
       >
