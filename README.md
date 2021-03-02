@@ -46,7 +46,7 @@ Update the `https-server.js` file with your certifcate file paths and run:
 yarn https-dev
 ```
 
-And open your `.local` address (eg. https://my-notebook.local:3000) from any device on your LAN. 
+Open your `.local` address (eg. https://my-notebook.local:3000) from any device on your LAN. 
 
 ---
 
