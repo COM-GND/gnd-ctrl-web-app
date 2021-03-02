@@ -58,7 +58,7 @@ export default function useComGndModule(btDevice, sensorName) {
         // decode float value
         // const textDecoder = new TextDecoder("ascii");
         // value = parseFloat(textDecoder.decode(event.target.value.buffer));
-        value = new Float32Array(event.target.value.buffer);
+        value = new Float32Array(event.target.value.buffer)[0];
       } else {
         value = event.target.value.buffer;
         console.log("update:", event.target.value.buffer);

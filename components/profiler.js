@@ -5,6 +5,7 @@ import useComGndBtIsConnected from "../hooks/use-com-gnd-bt-is-connected";
 import ProfileRunner from "./profile-runner.js";
 import bloomingEspresso from "../profiles/blooming-espresso";
 import useComGndModule from "../hooks/use-com-gnd-bt-module";
+import filterPressureData from "../utils/filter-pressure-data";
 
 const Chart = dynamic(() => import("../components/chart"), { ssr: false });
 
@@ -60,6 +61,8 @@ export default function Profiler({
         if (t > profileTotalMs) {
           newSensorDataHistory = timeShiftData(newSensorDataHistory);
         }
+        //filterPressureData(newSensorDataHistory);
+        
         return newSensorDataHistory;
       });
     }
@@ -76,13 +79,13 @@ export default function Profiler({
     >
       <Box fill="horizontal" pad="small" gridArea="main">
         <Chart
-          sensorDataHistory={sensorDataHistory}
+          sensorDataHistory={filterPressureData(sensorDataHistory)}
           profileDataHistory={profileDataHistory}
           timeDomain={profile.getTotalMs()}
           recipeData={profile.getProfile()}
         />
       </Box>
-      <Box pad={{top: 0, horizontal: "small"}} gridArea="controls">
+      <Box pad={{top: "none", horizontal: "small"}} gridArea="controls">
         <ProfileRunner
           profile={profile}
           onChange={(state) => {
