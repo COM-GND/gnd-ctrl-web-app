@@ -52,7 +52,7 @@ export default function useComGndModule(btDevice, sensorName) {
   useEffect(async () => {
     function handleCharacteristicValueChanged(event) {
       let value;
-      console.log("update:", event.target.value.buffer);
+      // console.log("update:", event.target.value.buffer);
 
       if (characteristics[sensorName].type === "float") {
         // decode float value
@@ -61,7 +61,7 @@ export default function useComGndModule(btDevice, sensorName) {
         value = new Float32Array(event.target.value.buffer)[0];
       } else {
         value = event.target.value.buffer;
-        console.log("update:", event.target.value.buffer);
+        // console.log("update:", event.target.value.buffer);
 
       }
 
@@ -69,7 +69,7 @@ export default function useComGndModule(btDevice, sensorName) {
 
       setSensorValue(value);
       setTimeStamp(timeStamp);
-      console.log("value changed", value, timeStamp);
+      // console.log("value changed", value, timeStamp);
     }
 
     if (isConnected) {

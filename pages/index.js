@@ -8,6 +8,7 @@ import { deepMerge } from "grommet/utils";
 import BluetoothConnectButton from "../components/bluetooth-connect-button";
 import useComGndBtIsConnected from "../hooks/use-com-gnd-bt-is-connected";
 import Profiler from "../components/profiler";
+import requestWakeLock from "../utils/wake-lock";
 
 const theme = deepMerge(grommet, gndCtrlTheme);
 
@@ -162,11 +163,12 @@ export default function Home() {
                 } catch (error) {
                   console.error("Bluetooth error:", error);
                 }
+                requestWakeLock(10);
               }}
             />
           </Box>
-        <Box gridArea="footer" border={true}>
-          GND-CTRL by COM-GND
+        <Box gridArea="footer" border={false}>
+
         </Box>
       </Grid>
     </Grommet>

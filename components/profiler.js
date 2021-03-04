@@ -19,10 +19,11 @@ export default function Profiler({
 }) {
   const [startTime, setStartTime] = useState(0);
   const startTimeRef = useRef(startTime);
+  const lastPressureReadTimeRef = useRef();
 
   const [profile, setProfile] = useState(new bloomingEspresso());
   const [profileTotalMs, setProfileTotalMs] = useState(profile.getTotalMs());
-  const [profileRecipe, setProfileRecipe] = useState([]);
+  const [profileRecipe, setProfileRecipe] = useState(profile.getDefaultRecipe());
   const [playState, setPlayState] = useState("stop");
   const [isRunning, setIsRunning] = useState(false);
   const [profileDataHistory, updateProfileDataHistory] = useState([]);
@@ -36,35 +37,49 @@ export default function Profiler({
     "pressure"
   );
 
+  const profileData = profile.getProfile();
   // Update the Sensor Data History array when a sensor value changes
   // TODO: This only runs when the sensor value changes, but we want the graph
   // to update a minimal interval anyway. Need to add a timeout event
   useEffect(() => {
-    function timeShiftData(data) {
-      // return data;
-      const allData = [...data].map((datum, i) => {
-        return i > 0 ? Object.assign({}, datum, { t: data[i - 1].t }) : datum;
-      });
-      allData.shift();
+    function timeShiftData(data, lastTime) {
+      // shift the time off the data so that it the data stays within the profile time length
+      // any value that go below zero are remove. 
+
+      if(data.length < 2) {
+        return data;
+      }
+      const timeDelta = data[data.length - 1].t - lastTime;
+      // let lastNegativeIndex = data.slice().reverse().findIndex(j => j.t - timeDelta < 0);
+      // lastNegativeIndex == lastNegativeIndex < 0 ? 0 : lastNegativeIndex;
+      // lastNegativeIndex = lastNegativeIndex !== -1 ? data.length - 1 - lastNegativeIndex : -1;
+
+      const allData = [...data].map((datum, i, data) => {
+        let newT = datum.t - timeDelta
+        // We need to keep the last negative value and change it t0 to preserve full line length
+        return Object.assign({}, datum, { t: newT});
+      }).filter((datum, i) => datum.t >= 0);
+
+      console.log(lastTime, timeDelta, data);
       return allData;
     }
-
+    
     if (pressure) {
       
       const now = Date.now();
+      let offset = startTime;
       if(startTime === 0) {
         setStartTime(now)
+        offset = now;
       }
-      const t = now - startTime;
+      const lastT = lastPressureReadTimeRef.current;
+      const t = now - offset;
+
       updateSensorDataHistory((history) => {
-        let newSensorDataHistory = [...history, { t: t, bars: pressure }];
-        if (t > profileTotalMs) {
-          newSensorDataHistory = timeShiftData(newSensorDataHistory);
-        }
-        //filterPressureData(newSensorDataHistory);
-        
+        const newSensorDataHistory = [...history, { t: t, bars: pressure }].filter(datum => datum.t > t - profileTotalMs);
         return newSensorDataHistory;
       });
+      lastPressureReadTimeRef.current = t;
     }
   }, [pressure, pressureTimeStamp, profileTotalMs, startTime]);
 
@@ -79,10 +94,10 @@ export default function Profiler({
     >
       <Box fill="horizontal" pad="small" gridArea="main">
         <Chart
-          sensorDataHistory={filterPressureData(sensorDataHistory)}
+          sensorDataHistory={sensorDataHistory}
           profileDataHistory={profileDataHistory}
-          timeDomain={profile.getTotalMs()}
-          recipeData={profile.getProfile()}
+          timeDomain={profileTotalMs}
+          recipeData={profileData}
         />
       </Box>
       <Box pad={{top: "none", horizontal: "small"}} gridArea="controls">

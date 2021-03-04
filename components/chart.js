@@ -9,7 +9,7 @@ import {
   ResponsiveContainer
 } from "recharts";
 
-import bloomingEspresso from "../profiles/blooming-espresso";
+import filterPressureData from "../utils/filter-pressure-data";
 
 export default function Chart({
   sensorDataHistory,
@@ -18,6 +18,14 @@ export default function Chart({
   timeDomain = 60,
 }) {
   // console.log(data, pressureData);
+  const xMin = sensorDataHistory[0].t;
+  const xMax = sensorDataHistory[sensorDataHistory.length - 1].t
+  const filteredSensorDataHistory = filterPressureData(sensorDataHistory);
+
+  // if the sensorData time goes past the end of the recipe, extend the recipe's last pressure out
+  if(recipeData[recipeData.length - 1].t < xMax) {
+    recipeData.push({t: xMax,  bars: recipeData[recipeData.length - 1].bars});
+  }
 
   return (
     <ResponsiveContainer width="100%" height="100%">
@@ -43,11 +51,11 @@ export default function Chart({
         />
         <XAxis
           dataKey="t"
-          interval="preserveStartEnd"
+          interval={0}
           allowDecimals={true}
           type="number"
           tickCount={Math.floor(timeDomain / 5000) + 1}
-          domain={[0, timeDomain]}
+          domain={[dataMin => xMin , 'dataMax']}
           tickFormatter={(value) => parseFloat(value / 1000).toFixed(0)}
         />
         {/* <Tooltip /> */}
@@ -55,6 +63,7 @@ export default function Chart({
 
         <Line
           name="Recipe Profile"
+          isAnimationActive={false}
           id="recipe-profile"
           type="monotone"
           data={recipeData}
@@ -70,7 +79,7 @@ export default function Chart({
           name="live-bars"
           id="live-bars"
           dataKey="bars"
-          data={sensorDataHistory}
+          data={filteredSensorDataHistory}
           stroke="hsla(0, 0%, 100%, 1)"
           dot={false}
           // dot={{ fill: "hsla(0, 0%, 100%, .5)", strokeWidth: 0, r: 4 }}

@@ -3,7 +3,7 @@
  * @param {array} data - pressure sensor data in the shape of {t: int, bars: float}
  */
 export default function filterPressureData (data) {
-    const minVariance = .05;
+    const minVariance = .02;
     const filteredData = data.filter((datum, i, data) => {
         if(i > 0 && i < data.length - 1 ) {
             const lastBars = data[i-1].bars;
@@ -18,6 +18,6 @@ export default function filterPressureData (data) {
         }
         return true;
     });
-    console.log('f', filteredData);
+    // console.log('f', filteredData);
     return filteredData;
 }
