@@ -6,7 +6,8 @@ import {
   Tooltip,
   CartesianGrid,
   Line,
-  ResponsiveContainer
+  ResponsiveContainer,
+  ReferenceLine
 } from "recharts";
 
 import filterPressureData from "../utils/filter-pressure-data";
@@ -16,13 +17,19 @@ export default function Chart({
   profileDataHistory,
   recipeData,
   timeDomain = 60,
+  pressureTarget = 5.0
 }) {
-  // console.log(data, pressureData);
+  // console.log("target", pressureTarget);
   const xMin = sensorDataHistory[0].t;
   const xMax = sensorDataHistory[sensorDataHistory.length - 1].t
   const filteredSensorDataHistory = filterPressureData(sensorDataHistory);
 
+  if(recipeData[recipeData.length - 1].t < xMin) {
+    recipeData = [recipeData.pop()];
+  }
+
   // if the sensorData time goes past the end of the recipe, extend the recipe's last pressure out
+
   if(recipeData[recipeData.length - 1].t < xMax) {
     recipeData.push({t: xMax,  bars: recipeData[recipeData.length - 1].bars});
   }
@@ -37,6 +44,7 @@ export default function Chart({
           strokeWidth={1}
           stroke={"hsla(0, 0%, 100%, .1)"}
         />
+        <ReferenceLine y={pressureTarget} stroke="red"/>
         <YAxis
           dataKey="bars"
           domain={[0, 10]}

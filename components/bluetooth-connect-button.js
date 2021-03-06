@@ -1,5 +1,6 @@
 import react, { useState } from "react";
 import { Button } from "grommet";
+import comGndConfig from "../device-configs/com-gnd-default-config";
 import BluetoothIcon from "../svgs/bluetooth-24px.svg";
 
 export default function BluetoothConnectButton({
@@ -12,6 +13,10 @@ export default function BluetoothConnectButton({
   const [btServer, setBtServer] = useState();
 
   const getIcon = (connected) => {};
+
+  const bleCharIds = Object.keys(comGndConfig.bluetooth.characteristics).map(
+    (charName) => comGndConfig.bluetooth.characteristics[charName].id
+  );
 
   return (
     <div className="bluetooth-connect-button">
@@ -43,7 +48,7 @@ export default function BluetoothConnectButton({
             onConnect(btDevice, server);
           } else {
             // manual user input is required to give permission to access device.
-            console.log("connect", e, navigator.bluetooth);
+            console.log("connect: ", e, navigator.bluetooth, comGndConfig.bluetooth.serviceId);
             let device, server, service, characteristic, value;
             try {
               device = await navigator.bluetooth.requestDevice({
@@ -52,7 +57,7 @@ export default function BluetoothConnectButton({
                     name: "COM-GND Espresso",
                   },
                 ],
-                optionalServices: ['8fc1ceca-b162-4401-9607-c8ac21383e4e'],
+                optionalServices: [comGndConfig.bluetooth.serviceId] //["8fc1ceca-b162-4401-9607-c8ac21383e4e"],
               });
             } catch (error) {
               console.error(error);

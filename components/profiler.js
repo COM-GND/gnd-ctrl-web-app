@@ -34,7 +34,11 @@ export default function Profiler({
   //   let isBtConnected = useComGndBtIsConnected(comGndBtDevice);
   let [pressure, pressureTimeStamp, setPressure] = useComGndModule(
     comGndBtDevice,
-    "pressure"
+    "pressureSensor"
+  );
+  let [pressureTarget, pressureTargetTimeStamp, setPressureTarget] = useComGndModule(
+    comGndBtDevice,
+    "pressureTarget"
   );
 
   const profileData = profile.getProfile();
@@ -83,6 +87,10 @@ export default function Profiler({
     }
   }, [pressure, pressureTimeStamp, profileTotalMs, startTime]);
 
+  useEffect(() => {
+    console.log('Target Pressure Change: ', pressureTarget);
+  }, [pressureTarget]);
+
   return (
     <Grid
       direction="column"
@@ -98,6 +106,7 @@ export default function Profiler({
           profileDataHistory={profileDataHistory}
           timeDomain={profileTotalMs}
           recipeData={profileData}
+          pressureTarget={pressureTarget}
         />
       </Box>
       <Box pad={{top: "none", horizontal: "small"}} gridArea="controls">

@@ -9,6 +9,7 @@ import BluetoothConnectButton from "../components/bluetooth-connect-button";
 import useComGndBtIsConnected from "../hooks/use-com-gnd-bt-is-connected";
 import Profiler from "../components/profiler";
 import requestWakeLock from "../utils/wake-lock";
+import comGndConfig from "../device-configs/com-gnd-default-config";
 
 const theme = deepMerge(grommet, gndCtrlTheme);
 
@@ -153,7 +154,8 @@ export default function Home() {
                 try {
                   setComGndBtDevice(device);
                   const service = await server.getPrimaryService(
-                    "8fc1ceca-b162-4401-9607-c8ac21383e4e"
+                    comGndConfig.bluetooth.serviceId
+                    // "8fc1ceca-b162-4401-9607-c8ac21383e4e"
                   );
                   setComGndBtService(service);
                   device.addEventListener(
