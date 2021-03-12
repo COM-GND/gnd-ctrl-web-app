@@ -8,6 +8,7 @@ import { deepMerge } from "grommet/utils";
 import BluetoothConnectButton from "../components/bluetooth-connect-button";
 import useComGndBtIsConnected from "../hooks/use-com-gnd-bt-is-connected";
 import Profiler from "../components/profiler";
+import Header from "../components/header";
 import requestWakeLock from "../utils/wake-lock";
 import comGndConfig from "../device-configs/com-gnd-default-config";
 
@@ -98,8 +99,8 @@ export default function Home() {
           ['footer']
         ]}
       >
-        <Box gridArea="header">Header</Box>
-        <Box fill={true} border={true} gridArea="main" overflow="hidden">
+        <Header/>
+        <Box fill={true} border={false} gridArea="main" overflow="hidden">
           <Profiler comGndBtDevice={comGndBtDevice} />
         </Box>
         <Box gridArea="controls" direction="row" fill="horizontal" gap="small">

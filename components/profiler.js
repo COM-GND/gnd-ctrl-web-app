@@ -5,7 +5,8 @@ import useComGndBtIsConnected from "../hooks/use-com-gnd-bt-is-connected";
 import ProfileRunner from "./profile-runner.js";
 import bloomingEspresso from "../profiles/blooming-espresso";
 import useComGndModule from "../hooks/use-com-gnd-bt-module";
-import filterPressureData from "../utils/filter-pressure-data";
+import Slider, { Range } from "rc-slider";
+import "rc-slider/assets/index.css";
 
 const Chart = dynamic(() => import("../components/chart"), { ssr: false });
 
@@ -23,7 +24,9 @@ export default function Profiler({
 
   const [profile, setProfile] = useState(new bloomingEspresso());
   const [profileTotalMs, setProfileTotalMs] = useState(profile.getTotalMs());
-  const [profileRecipe, setProfileRecipe] = useState(profile.getDefaultRecipe());
+  const [profileRecipe, setProfileRecipe] = useState(
+    profile.getDefaultRecipe()
+  );
   const [playState, setPlayState] = useState("stop");
   const [isRunning, setIsRunning] = useState(false);
   const [profileDataHistory, updateProfileDataHistory] = useState([]);
@@ -31,76 +34,87 @@ export default function Profiler({
     { bars: 0, t: 0 },
   ]);
 
-  //   let isBtConnected = useComGndBtIsConnected(comGndBtDevice);
+  // pressure is the pressure sensor reading in bars from the com-gnd pressure sensor module hardware
+  // value is a float between 0.0 and 10.0 (bars)
   let [pressure, pressureTimeStamp, setPressure] = useComGndModule(
     comGndBtDevice,
     "pressureSensor"
   );
-  let [pressureTarget, pressureTargetTimeStamp, setPressureTarget] = useComGndModule(
+
+  // pressureTarget is the target pressure according to the com-gnd hardware
+  // this value can be controlled by this app or external hardware (ie, the rotary encoder module)
+  // value is a float between 0.0 and 10.0 (bars)
+  let [
+    pressureTarget,
+    pressureTargetTimeStamp,
+    setPressureTarget,
+  ] = useComGndModule(comGndBtDevice, "pressureTarget");
+
+  // The value of the power level set on the com-gnd hardware pump control module
+  // value is a float between 0.0 and 1.0
+  let [pumpLevel, pumpLevelTimeStamp] = useComGndModule(
     comGndBtDevice,
-    "pressureTarget"
+    "pumpLevel"
   );
+
+  // the state value for the manual pressure control slider UI
+  // value is an integer between 0 and 1000. It needs to scaled to 0 to 10 to set the pressureTarget
+  const [pressureSliderValue, setPressureSliderValue] = useState(
+    pressureTarget || 0
+  );
+
+  //console.log('pumpLevel init', pumpLevel);
 
   const profileData = profile.getProfile();
   // Update the Sensor Data History array when a sensor value changes
   // TODO: This only runs when the sensor value changes, but we want the graph
-  // to update a minimal interval anyway. Need to add a timeout event
+  // to update a minimal interval anyway. May need to add a timeout event?
   useEffect(() => {
-    function timeShiftData(data, lastTime) {
-      // shift the time off the data so that it the data stays within the profile time length
-      // any value that go below zero are remove. 
-
-      if(data.length < 2) {
-        return data;
-      }
-      const timeDelta = data[data.length - 1].t - lastTime;
-      // let lastNegativeIndex = data.slice().reverse().findIndex(j => j.t - timeDelta < 0);
-      // lastNegativeIndex == lastNegativeIndex < 0 ? 0 : lastNegativeIndex;
-      // lastNegativeIndex = lastNegativeIndex !== -1 ? data.length - 1 - lastNegativeIndex : -1;
-
-      const allData = [...data].map((datum, i, data) => {
-        let newT = datum.t - timeDelta
-        // We need to keep the last negative value and change it t0 to preserve full line length
-        return Object.assign({}, datum, { t: newT});
-      }).filter((datum, i) => datum.t >= 0);
-
-      console.log(lastTime, timeDelta, data);
-      return allData;
-    }
-    
-    if (pressure) {
-      
+    if (pumpLevel && pressure) {
       const now = Date.now();
       let offset = startTime;
-      if(startTime === 0) {
-        setStartTime(now)
+      if (startTime === 0) {
+        setStartTime(now);
         offset = now;
       }
       const lastT = lastPressureReadTimeRef.current;
       const t = now - offset;
 
       updateSensorDataHistory((history) => {
-        const newSensorDataHistory = [...history, { t: t, bars: pressure }].filter(datum => datum.t > t - profileTotalMs);
+        const newSensorDataHistory = [
+          ...history,
+          { t: t, bars: pressure },
+        ].filter((datum) => datum.t > t - profileTotalMs);
         return newSensorDataHistory;
       });
       lastPressureReadTimeRef.current = t;
     }
-  }, [pressure, pressureTimeStamp, profileTotalMs, startTime]);
+  }, [pressure, pressureTimeStamp, pumpLevel, profileTotalMs, startTime]);
 
   useEffect(() => {
-    console.log('Target Pressure Change: ', pressureTarget);
+    console.log("Target Pressure Change: ", pressureTarget);
+    setPressureSliderValue(pressureTarget * 100);
   }, [pressureTarget]);
+
+  useEffect(() => {
+    console.log("Pump Level Change: ", pumpLevel);
+  }, [pumpLevel]);
 
   return (
     <Grid
       direction="column"
       fill={true}
-      border={true}
+      border={false}
       areas={[["main"], ["controls"]]}
       rows={["flex", "auto"]}
       columns={["auto"]}
     >
-      <Box fill="horizontal" pad="small" gridArea="main">
+      <Box
+        fill="horizontal"
+        pad={{ vertical: "none", horizontal: "small" }}
+        gridArea="main"
+        direction="row"
+      >
         <Chart
           sensorDataHistory={sensorDataHistory}
           profileDataHistory={profileDataHistory}
@@ -108,8 +122,37 @@ export default function Profiler({
           recipeData={profileData}
           pressureTarget={pressureTarget}
         />
+        <Box pad={{ bottom: "36px", top: "4px" }}>
+          <Slider
+            vertical={true}
+            min={0}
+            max={1000}
+            defaultValue={pressureTarget * 100}
+            value={pressureSliderValue}
+            onBeforeChange={() => {}}
+            onChange={(val) => {
+              setPressureSliderValue(val);
+              setPressureTarget(val / 100);
+            }}
+            handleStyle={{
+              border: "none",
+              opacity: ".3",
+              width: '20px',
+              height: '20px',
+              marginLeft: "-8px"
+            }}
+            trackStyle={{
+              opacity: ".1",
+              background: "white"
+            }}
+            railStyle={{
+              opacity: ".1",
+            }}
+          />
+          {/* <Range  vertical={true}/> */}
+        </Box>
       </Box>
-      <Box pad={{top: "none", horizontal: "small"}} gridArea="controls">
+      <Box pad={{ top: "none", horizontal: "small" }} gridArea="controls">
         <ProfileRunner
           profile={profile}
           onChange={(state) => {

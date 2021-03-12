@@ -4,7 +4,7 @@ export default async function requestWakeLock(releaseAfterMinutes){
     try {
       wakeLock = await navigator.wakeLock.request();
       wakeLock.addEventListener('release', () => {
-        console.log('Screen Wake Lock released:', wakeLock.released);
+        console.log('Screen Wake Lock released:', wakeLock && wakeLock.released);
       });
       if(releaseAfterMinutes) {
         window.setTimeout(() => {
@@ -12,7 +12,6 @@ export default async function requestWakeLock(releaseAfterMinutes){
             wakeLock = null;
           }, releaseAfterMinutes * 1000 * 60);
       }
-      console.log('Screen Wake Lock released:', wakeLock.released);
     } catch (err) {
       console.error(`${err.name}, ${err.message}`);
     }

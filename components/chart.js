@@ -24,12 +24,13 @@ export default function Chart({
   const xMax = sensorDataHistory[sensorDataHistory.length - 1].t
   const filteredSensorDataHistory = filterPressureData(sensorDataHistory);
 
+  // TODO the recipe line with curve smoothing causes rechart performance issues when it the chart redraws. 
+  // look for ways to improve performance
   if(recipeData[recipeData.length - 1].t < xMin) {
     recipeData = [recipeData.pop()];
   }
 
   // if the sensorData time goes past the end of the recipe, extend the recipe's last pressure out
-
   if(recipeData[recipeData.length - 1].t < xMax) {
     recipeData.push({t: xMax,  bars: recipeData[recipeData.length - 1].bars});
   }
@@ -77,7 +78,6 @@ export default function Chart({
           data={recipeData}
           dataKey="bars"
           stroke="hsla(0, 0%, 100%, .2)"
-          isAnimationActive={true}
           strokeWidth={6}
           dot={{ fill: "hsla(0, 0%, 100%, .5)", strokeWidth: 0, r: 3 }}
         />

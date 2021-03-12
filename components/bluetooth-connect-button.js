@@ -26,7 +26,7 @@ export default function BluetoothConnectButton({
         icon={
           <BluetoothIcon
             viewBox="0 0 24 24"
-            style={{ fill: "white", width: "16px", height: "16px" }}
+            style={{ fill: "red", width: "16px", height: "16px" }}
           />
         }
         label={isConnected ? "Disconnect" : "Connect"}
