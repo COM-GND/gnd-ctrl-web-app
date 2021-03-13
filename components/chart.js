@@ -74,7 +74,7 @@ export default function Chart({
           name="Recipe Profile"
           isAnimationActive={false}
           id="recipe-profile"
-          type="monotone"
+          type="monotoneX"
           data={recipeData}
           dataKey="bars"
           stroke="hsla(0, 0%, 100%, .2)"

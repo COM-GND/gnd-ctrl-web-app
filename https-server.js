@@ -23,7 +23,8 @@ const handle = app.getRequestHandler();
 let rootCAPath = execSync("mkcert -CAROOT").toString();
 rootCAPath = rootCAPath.replace(/(\r\n|\n|\r)/gm, "");
 rootCAPath = path.join(rootCAPath, 'rootCA.pem');
-console.log('CA path: ', rootCAPath);
+console.log('Your Root Certificate is located at: ', rootCAPath);
+console.log('Make sure the certificate is installed on your iOS device. See https://matthewhoelter.com/2019/10/21/how-to-setup-https-on-your-local-development-environment-localhost-in-minutes.html');
 
 var options = {
   key: fs.readFileSync("./localhost+5-key.pem"),

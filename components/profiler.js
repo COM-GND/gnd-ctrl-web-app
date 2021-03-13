@@ -63,6 +63,10 @@ export default function Profiler({
     pressureTarget || 0
   );
 
+  // Track when slide is in active use. We don't want to update the pressureSlideValue 
+  // with new bluetooth value is the user is actively using the slider. 
+  const [pressureSliderIsActive, setPressureSliderIsActive] = useState(false);
+
   //console.log('pumpLevel init', pumpLevel);
 
   const profileData = profile.getProfile();
@@ -93,8 +97,10 @@ export default function Profiler({
 
   useEffect(() => {
     console.log("Target Pressure Change: ", pressureTarget);
-    setPressureSliderValue(pressureTarget * 100);
-  }, [pressureTarget]);
+    if(!pressureSliderIsActive){
+      setPressureSliderValue(pressureTarget * 100);
+    } 
+  }, [pressureTarget, pressureSliderIsActive]);
 
   useEffect(() => {
     console.log("Pump Level Change: ", pumpLevel);
@@ -129,11 +135,12 @@ export default function Profiler({
             max={1000}
             defaultValue={pressureTarget * 100}
             value={pressureSliderValue}
-            onBeforeChange={() => {}}
+            onBeforeChange={() => setPressureSliderIsActive(true)}
             onChange={(val) => {
               setPressureSliderValue(val);
               setPressureTarget(val / 100);
             }}
+            onAfterChange={() => setPressureSliderIsActive(false)}
             handleStyle={{
               border: "none",
               opacity: ".3",
