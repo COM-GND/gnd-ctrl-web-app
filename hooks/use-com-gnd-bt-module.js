@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import comGndConfig from "../device-configs/com-gnd-default-config";
 import useComGndIsConnected from "./use-com-gnd-bt-is-connected";
+import useDebouncedEffect from "./use-debounced-effect";
 
 export default function useComGndModule(btDevice, sensorName) {
   const isConnected = useComGndIsConnected(btDevice);
@@ -12,16 +13,11 @@ export default function useComGndModule(btDevice, sensorName) {
   const [timeStamp, setTimeStamp] = useState(null);
 
   const [targetValue, setTargetValue] = useState();
+  const targetValueRef = useRef(targetValue);
   const [targetValueTimeStamp, setTargetValueTimestamp] = useState();
 
-
-  // const serviceId = "8fc1ceca-b162-4401-9607-c8ac21383e4e";
-  // const characteristics = {
-  //   pressure: {
-  //     id: "c14f18ef-4797-439e-a54f-498ba680291d",
-  //     type: "float",
-  //   },
-  // };
+  const gattWriteIsInProgress = useRef(false);
+  const gattWriteTimeoutRef = useRef();
 
   const serviceId = comGndConfig.bluetooth.serviceId;
   const characteristics = comGndConfig.bluetooth.characteristics;
@@ -31,30 +27,117 @@ export default function useComGndModule(btDevice, sensorName) {
     setTargetValueTimestamp(Date.now());
   };
 
+  useDebouncedEffect(
+    async () => {
+      // the characteristic writeValue may already be in progress from previsou writeValue
+      // Here we use an async function to qeueu the write value if the previous write hasn't finished.
+      async function writeValue() {
+        const textEncoder = new TextEncoder();
+        const encodedValue = textEncoder.encode(targetValueRef.current);
+        if (gattWriteTimeoutRef.current) {
+          clearTimeout(gattWriteTimeoutRef.current);
+          // console.log('co', gattWriteTimeoutRef.current );
+          gattWriteTimeoutRef.current = undefined;
+        }
+        try {
+          if (!gattWriteIsInProgress.current) {
+            // if (targetValue !== targetValueRef.current) {
+            gattWriteIsInProgress.current = true;
+            console.log(
+              "write bt characteristic value",
+              btCharacteristic,
+              targetValue
+            );
+            
+            const encodedValue = textEncoder.encode(targetValueRef.current);
+            await btCharacteristic.writeValue(encodedValue);
+
+            // clear after settings
+            gattWriteIsInProgress.current = false;
+            //setTargetValue(undefined);
+            // }
+          } else {
+            if (!gattWriteTimeoutRef.current) {
+              gattWriteTimeoutRef.current = window.setTimeout(writeValue, 5);
+              // console.log('to', gattWriteTimeoutRef.current);
+            }
+          }
+        } catch (error) {
+          console.error("Bluetooth error: ", error);
+        }
+      }
+
+      if (isConnected && btCharacteristic && targetValue) {
+        // TODO - encoding might be different if value is not a float.
+        targetValueRef.current = targetValue;
+        writeValue();
+      }
+
+      return () => {
+        clearTimeout(gattWriteTimeoutRef.current);
+      };
+    },
+    1,
+    [isConnected, btCharacteristic, targetValue]
+  );
+
   /**
    * Handle outgoing updates to target value and send to bt device.
    */
-  useEffect(async () => {
-    if (isConnected && btCharacteristic && targetValue) {
-      // TODO - encoding might be different if value is not a float.
-      const textEncoder = new TextEncoder();
-      const encodedValue = textEncoder.encode(targetValue);
+  // useEffect(async () => {
+  //   let timeoutID = undefined;
 
-      try {
-        console.log("write bt characteristic value", btCharacteristic, targetValue);
-        await btCharacteristic.writeValue(encodedValue);
-        // clear after settings
-        setTargetValue(undefined);
-      } catch (error) {
-        console.error("Bluetooth error: ", error);
-      }
-    }
-  }, [isConnected, btCharacteristic, targetValue]);
+  //   // the characteristic writeValue may already be in progress from previsou writeValue
+  //   // Here we use an async function to qeueu the write value if the previous write hasn't finished.
+  //   async function writeValue() {
+  //     const textEncoder = new TextEncoder();
+  //     const encodedValue = textEncoder.encode(targetValueRef.current);
+  //     if (gattWriteTimeoutRef.current) {
+  //       clearTimeout(timeoutID);
+  //       // console.log('co', gattWriteTimeoutRef.current );
+  //       gattWriteTimeoutRef.current = undefined;
+  //     }
+  //     try {
+  //       if (!gattWriteIsInProgress.current) {
+  //         // if (targetValue !== targetValueRef.current) {
+  //           gattWriteIsInProgress.current = true;
+  //           console.log(
+  //             "write bt characteristic value",
+  //             btCharacteristic,
+  //             targetValue
+  //           );
+  //           await btCharacteristic.writeValue(encodedValue);
+
+  //           // clear after settings
+  //           gattWriteIsInProgress.current = false;
+  //           //setTargetValue(undefined);
+  //         // }
+  //       } else {
+  //         if(!gattWriteTimeoutRef.current) {
+  //           gattWriteTimeoutRef.current = window.setTimeout(writeValue, 20);
+  //           // console.log('to', gattWriteTimeoutRef.current);
+  //         }
+  //       }
+  //     } catch (error) {
+  //       console.error("Bluetooth error: ", error);
+  //     }
+  //   }
+
+  //   if (isConnected && btCharacteristic && targetValue) {
+  //     // TODO - encoding might be different if value is not a float.
+  //     targetValueRef.current = targetValue;
+  //     writeValue();
+  //   }
+
+  //   return () => {
+  //     clearTimeout(gattWriteTimeoutRef.current);
+  //   };
+  // }, [isConnected, btCharacteristic, targetValue]);
 
   /**
    * Handle incoming changes to sensor value
    */
-  useEffect(async () => {
+  useDebouncedEffect(async () => {
     function handleCharacteristicValueChanged(event) {
       let value;
       //console.log("update:", event.target.value.buffer);
@@ -64,10 +147,11 @@ export default function useComGndModule(btDevice, sensorName) {
         // const textDecoder = new TextDecoder("ascii");
         // value = parseFloat(textDecoder.decode(event.target.value.buffer));
         value = new Float32Array(event.target.value.buffer)[0];
+        // round to 2 deciman places
+        value = Math.round(value * 100) / 100;
       } else {
         value = event.target.value.buffer;
         // console.log("update:", event.target.value.buffer);
-
       }
 
       const timeStamp = Date.now();
@@ -99,7 +183,12 @@ export default function useComGndModule(btDevice, sensorName) {
               try {
                 await characteristic.startNotifications();
               } catch (err) {
-                console.error("Bluetooth error (startNotifications): ", sensorName, err, characteristic.properties);
+                console.error(
+                  "Bluetooth error (startNotifications): ",
+                  sensorName,
+                  err,
+                  characteristic.properties
+                );
               }
               setNotificationsStarted(true);
             }
@@ -110,7 +199,11 @@ export default function useComGndModule(btDevice, sensorName) {
                 handleCharacteristicValueChanged
               );
             } catch (err) {
-              console.error("Bluetooth error (addEventListener characteristicvaluechanged): ", sensorName, err);
+              console.error(
+                "Bluetooth error (addEventListener characteristicvaluechanged): ",
+                sensorName,
+                err
+              );
             }
             setBtCharacteristic(characteristic);
           }
@@ -145,7 +238,7 @@ export default function useComGndModule(btDevice, sensorName) {
       );
       //}
     };
-  }, [isConnected, comGndBtService, btCharacteristic, notificationsStarted]);
+  }, 50, [isConnected, comGndBtService, btCharacteristic, notificationsStarted]);
 
   //   console.log("value changed", sensorValue, timeStamp);
   return [sensorValue, timeStamp, setValue];

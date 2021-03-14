@@ -74,14 +74,14 @@ export default function Profiler({
   // TODO: This only runs when the sensor value changes, but we want the graph
   // to update a minimal interval anyway. May need to add a timeout event?
   useEffect(() => {
-    if (pumpLevel && pressure) {
+    if (/*pumpLevel &&*/ pressure) {
       const now = Date.now();
       let offset = startTime;
       if (startTime === 0) {
         setStartTime(now);
         offset = now;
       }
-      const lastT = lastPressureReadTimeRef.current;
+      // const lastT = lastPressureReadTimeRef.current;
       const t = now - offset;
 
       updateSensorDataHistory((history) => {
@@ -150,7 +150,7 @@ export default function Profiler({
             }}
             trackStyle={{
               opacity: ".1",
-              background: "white"
+              background: "white" 
             }}
             railStyle={{
               opacity: ".1",
