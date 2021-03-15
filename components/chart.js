@@ -10,25 +10,55 @@ import {
   ReferenceLine
 } from "recharts";
 
+import useDimensions from "react-cool-dimensions";
 import filterPressureData from "../utils/filter-pressure-data";
 
 export default function Chart({
   sensorDataHistory,
   profileDataHistory,
   recipeData,
-  timeDomain = 60,
+  timeDomain = 60000,
   pressureTarget = 5.0
 }) {
   // console.log("target", pressureTarget);
-  const xMin = sensorDataHistory[0].t;
-  const xMax = sensorDataHistory[sensorDataHistory.length - 1].t
+
+  const { ref, width, height} = useDimensions();
+
+  
+
+  const xMax = sensorDataHistory[sensorDataHistory.length - 1].t < timeDomain ? timeDomain : sensorDataHistory[sensorDataHistory.length - 1].t;
+  const xMin = xMax - timeDomain;
+
+
+  const tMin = 0;
+  const tMax = Math.max(xMax, recipeData[recipeData.length - 1].t);
+  const tRange = tMax - tMin;
+
   const filteredSensorDataHistory = filterPressureData(sensorDataHistory);
+
+  // recharts will fit the tRange into the available width
+  // ie. rechartsScale = (width / tRange)
+  // we need to invert that
+  // ie. (tRange / width)
+  // and then increase 
+
+  const rechartsScaleFactor = width / tRange || 1;
+  const rechartsNormalizationFactor = 1 / rechartsScaleFactor;
+  const chartWidth =  rechartsNormalizationFactor * width * .05;
+
+  console.log('tRange', tRange, 'rechartsScaleFactor', rechartsScaleFactor, 'rechartsNormalizationFactor', rechartsNormalizationFactor, 'chartWidth', chartWidth );
+  const dataMsPerPx = tRange / width;
+  const msPerPx = Math.max(40, dataMsPerPx); //width / tRange;
+  const dataWidth = tMax / msPerPx
+  // const chartWidth = Math.max(width, dataWidth);
+
+  //console.log('tRange', tRange, 'dataWidth', dataWidth, 'chartWidth', chartWidth, 'timeDomain', timeDomain, 'msPerPx', msPerPx, 'dataMsPerPx', dataMsPerPx);
 
   // TODO the recipe line with curve smoothing causes rechart performance issues when it the chart redraws. 
   // look for ways to improve performance
-  if(recipeData[recipeData.length - 1].t < xMin) {
-    recipeData = [recipeData.pop()];
-  }
+  // if(recipeData[recipeData.length - 1].t < xMin) {
+  //   recipeData = [recipeData.pop()];
+  // }
 
   // if the sensorData time goes past the end of the recipe, extend the recipe's last pressure out
   if(recipeData[recipeData.length - 1].t < xMax) {
@@ -36,9 +66,12 @@ export default function Chart({
   }
 
   return (
-    <ResponsiveContainer width="100%" height="100%">
+    <div ref={ref} style={{width: "100%", height: "100%", outline: "1px solid red", overflowX: "auto"}}>
+    <ResponsiveContainer width={chartWidth} height="100%">
       <LineChart
+        width={1200}
         margin={{ top: 5, right: 10, left: 10, bottom: 5 }}
+        // data={recipeData}
       >
         <CartesianGrid
           vertical={false}
@@ -63,8 +96,8 @@ export default function Chart({
           interval={0}
           allowDecimals={true}
           type="number"
-          tickCount={Math.floor(timeDomain / 5000) + 1}
-          domain={[dataMin => xMin , 'dataMax']}
+          tickCount={Math.floor(tRange / 1000) + 1}
+          // domain={[min => xMin , max => xMax]}
           tickFormatter={(value) => parseFloat(value / 1000).toFixed(0)}
         />
         {/* <Tooltip /> */}
@@ -104,6 +137,7 @@ export default function Chart({
         />
       </LineChart>
     </ResponsiveContainer>
+    </div>
   );
 }
 

@@ -62,7 +62,7 @@ const paramaters = [
       type: "time",
       min: 0,
       max: 60,
-      defaultValue: 30,
+      defaultValue: 10,
       unit: "seconds",
       control: "slider",
     },

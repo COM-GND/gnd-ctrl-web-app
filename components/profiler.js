@@ -88,7 +88,7 @@ export default function Profiler({
         const newSensorDataHistory = [
           ...history,
           { t: t, bars: pressure },
-        ].filter((datum) => datum.t > t - profileTotalMs);
+        ]/*.filter((datum) => datum.t > t - profileTotalMs)*/;
         return newSensorDataHistory;
       });
       lastPressureReadTimeRef.current = t;
