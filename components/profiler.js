@@ -77,7 +77,7 @@ export default function Profiler({
   // TODO: This only runs when the sensor value changes, but we want the graph
   // to update a minimal interval anyway. May need to add a timeout event?
   useEffect(() => {
-    if (/*pumpLevel &&*/ pressure) {
+    if (pumpLevel && pressure) {
       const now = Date.now();
       let offset = startTime;
       if (startTime === 0) {
@@ -185,29 +185,17 @@ export default function Profiler({
         </Text>
         <ProfileRunner
           profile={profile}
+          pumpLevel={pumpLevel}
           onChange={(state) => {
             updateProfileDataHistory((profileDataHistory) => {
               return [...profileDataHistory, state];
             });
             if (state.bars) {
-              setPressure(state.bars);
+              setPressureTarget(state.bars);
             }
-
-            // send the target value to the machine. see: https://web.dev/bluetooth/#write
-            //   if (comGndBtPressureCharacteristic && state.bars) {
-            //     // const encodedPressure = Uint8Array.of(state.bars);
-            //     const textDecoder = new TextDecoder("ascii");
-            //     const encodedPressure = textDecoder.encode(state.bars.toString());
-            //     try {
-            //       characteristic.writeValue(encodedPressure);
-            //     } catch (error) {
-            //       console.error("Error writing to bluetooth", error);
-            //     }
-            //   }
           }}
           onStart={() => {
-            //updateSensorDataHistory([{ bars: 0, t: 0 }]);
-            setStartTime(Date.now());
+            setStartTime(0);
             setIsRunning(true);
             onStart();
           }}
@@ -220,7 +208,7 @@ export default function Profiler({
           }}
           onStop={() => {
             setIsRunning(false);
-            setStartTime(Date.now());
+            setStartTime(0);
             updateSensorDataHistory(() => [{ bars: 0, t: 0 }]);
             updateProfileDataHistory(() => [{ bars: 0, t: 0 }]);
             onStop();

@@ -7,6 +7,7 @@ import PauseIcon from "../svgs/pause-24px.svg";
 export default function ProfileRunner({
   profile,
   liveData,
+  pumpLevel,
   onChange = () => {},
   onStart = () => {},
   onUnpause = () => {},
@@ -14,6 +15,8 @@ export default function ProfileRunner({
   onStop = () => {},
 }) {
   const interval = 250; // update frequency in MS
+
+  const [isWaitingForPump, setIsWaitingForPump] = useState(!pumpLevel);
 
   const [runState, _setRunState] = useState('stop');
   const runStateRef = useRef(runState);
@@ -57,7 +60,7 @@ export default function ProfileRunner({
   const handleTick = () => {
     const tickLength = Date.now() - timerRef.current;
     setTimer(timerRef.current + tickLength);
-    if (runStateRef.current === "play") {
+    if (runStateRef.current === "play" && !isWaitingForPump) {
       setRunTime(runTimeRef.current + tickLength);
       // const runningTime = getRunningTime();
       // console.log('tck', startTimeRef.current, timerRef.current) ;
@@ -83,6 +86,7 @@ export default function ProfileRunner({
   return (
     <Box direction="row" gap="xxsmall">
       {/* <Text>{runState ? getRunningTime() / 1000 : 0}</Text> */}
+      {isWaitingForPump && runState === "play" && <span>Power on machine to start.</span>}
       <Button
         hoverIndicator={{
           color: "white",
