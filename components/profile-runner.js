@@ -81,13 +81,16 @@ export default function ProfileRunner({
   }, []);
 
   return (
-    <Box direction="row" gap="xsmall">
+    <Box direction="row" gap="xxsmall">
       {/* <Text>{runState ? getRunningTime() / 1000 : 0}</Text> */}
       <Button
         hoverIndicator={{
           color: "white",
           opacity: 0.1,
         }}
+
+        margin="none"
+        size="xsmall"
         onClick={() => {
           if (runState === "play") {
             setRunState("pause");

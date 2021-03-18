@@ -1,6 +1,6 @@
 import dynamic from "next/dynamic";
 import { useState, useEffect, useRef } from "react";
-import { Box, Button, Grid } from "grommet";
+import { Box, Button, Grid, Text } from "grommet";
 import moment from "moment";
 import useComGndBtIsConnected from "../hooks/use-com-gnd-bt-is-connected";
 import ProfileRunner from "./profile-runner.js";
@@ -66,8 +66,8 @@ export default function Profiler({
     pressureTarget || 0
   );
 
-  // Track when slide is in active use. We don't want to update the pressureSlideValue 
-  // with new bluetooth value is the user is actively using the slider. 
+  // Track when slide is in active use. We don't want to update the pressureSlideValue
+  // with new bluetooth value is the user is actively using the slider.
   const [pressureSliderIsActive, setPressureSliderIsActive] = useState(false);
 
   //console.log('pumpLevel init', pumpLevel);
@@ -91,7 +91,7 @@ export default function Profiler({
         const newSensorDataHistory = [
           ...history,
           { t: t, bars: pressure },
-        ]/*.filter((datum) => datum.t > t - profileTotalMs)*/;
+        ]; /*.filter((datum) => datum.t > t - profileTotalMs)*/
         return newSensorDataHistory;
       });
       lastPressureReadTimeRef.current = t;
@@ -100,9 +100,9 @@ export default function Profiler({
 
   useEffect(() => {
     console.log("Target Pressure Change: ", pressureTarget);
-    if(!pressureSliderIsActive){
+    if (!pressureSliderIsActive) {
       setPressureSliderValue(pressureTarget * 100);
-    } 
+    }
   }, [pressureTarget, pressureSliderIsActive]);
 
   useEffect(() => {
@@ -120,7 +120,7 @@ export default function Profiler({
     >
       <Box
         fill="horizontal"
-        pad={{ vertical: "none", horizontal: "small" }}
+        pad={{ vertical: "none", horizontal: "none" }}
         gridArea="main"
         direction="row"
       >
@@ -131,7 +131,7 @@ export default function Profiler({
           recipeData={profileData}
           pressureTarget={pressureTarget}
         />
-        <Box pad={{ bottom: "36px", top: "4px", left: "5px" }}>
+        <Box pad={{ bottom: "32px", top: "8px", left: "5px", right: "5px"}}>
           <Slider
             disabled={!isConnected}
             vertical={true}
@@ -148,13 +148,13 @@ export default function Profiler({
             handleStyle={{
               border: "none",
               opacity: ".3",
-              width: '20px',
-              height: '20px',
-              marginLeft: "-8px"
+              width: "20px",
+              height: "20px",
+              marginLeft: "-8px",
             }}
             trackStyle={{
               opacity: ".1",
-              background: "white" 
+              background: "white",
             }}
             railStyle={{
               opacity: ".1",
@@ -163,19 +163,26 @@ export default function Profiler({
           {/* <Range  vertical={true}/> */}
         </Box>
       </Box>
-      <Box pad={{ top: "none", horizontal: "small" }} gridArea="controls">
-        {startTime > 0 && new Date(Date.now() - startTime).toLocaleTimeString('en-US', {
-  // weekday: 'long',
-  // year: 'numeric',
-  // month: 'numeric',
-  // day: 'numeric',
-  // hour: 'numeric',
-  minute: 'numeric',
-  second: 'numeric',
-  fractionalSecondDigits: 2,
-  hour12: false,
-  // timeZone: 'UTC'
-}) }
+      <Box
+        pad={{ top: "none", bottom: "xsmall", horizontal: "medium" }}
+        direction="row"
+        align="center"
+        fill="horizontal"
+        gap="small"
+        gridArea="controls"
+        justify="between"
+      >
+        <Text size="small">
+          {startTime > 0 ? (
+            new Date(Date.now() - startTime).toLocaleTimeString("en-US", {
+              minute: "numeric",
+              second: "numeric",
+              fractionalSecondDigits: 2,
+            })
+          ) : (
+            <span>00:00.00</span>
+          )}
+        </Text>
         <ProfileRunner
           profile={profile}
           onChange={(state) => {

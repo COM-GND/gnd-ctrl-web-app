@@ -98,7 +98,7 @@ export default function Chart({
         <LineChart
           width={chartWidth}
           height={height}
-          margin={{ top: 10, right: 10, left: 10, bottom: 5 }}
+          margin={{ top: 10, right: 10, left: 10, bottom: 0 }}
         >
           <CartesianGrid
             vertical={false}

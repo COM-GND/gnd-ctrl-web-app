@@ -10,6 +10,9 @@ const theme = {
           light: "whitesmoke"
         }
       }
+    },
+    edgeSize: {
+      small: "8px" // the padding for an icon-only button
     }
   }
 }
