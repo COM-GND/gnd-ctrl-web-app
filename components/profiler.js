@@ -1,6 +1,7 @@
 import dynamic from "next/dynamic";
 import { useState, useEffect, useRef } from "react";
 import { Box, Button, Grid } from "grommet";
+import moment from "moment";
 import useComGndBtIsConnected from "../hooks/use-com-gnd-bt-is-connected";
 import ProfileRunner from "./profile-runner.js";
 import bloomingEspresso from "../profiles/blooming-espresso";
@@ -33,6 +34,8 @@ export default function Profiler({
   const [sensorDataHistory, updateSensorDataHistory] = useState([
     { bars: 0, t: 0 },
   ]);
+
+  const isConnected = useComGndBtIsConnected(comGndBtDevice);
 
   // pressure is the pressure sensor reading in bars from the com-gnd pressure sensor module hardware
   // value is a float between 0.0 and 10.0 (bars)
@@ -128,8 +131,9 @@ export default function Profiler({
           recipeData={profileData}
           pressureTarget={pressureTarget}
         />
-        <Box pad={{ bottom: "36px", top: "4px" }}>
+        <Box pad={{ bottom: "36px", top: "4px", left: "5px" }}>
           <Slider
+            disabled={!isConnected}
             vertical={true}
             min={0}
             max={1000}
@@ -160,6 +164,18 @@ export default function Profiler({
         </Box>
       </Box>
       <Box pad={{ top: "none", horizontal: "small" }} gridArea="controls">
+        {startTime > 0 && new Date(Date.now() - startTime).toLocaleTimeString('en-US', {
+  // weekday: 'long',
+  // year: 'numeric',
+  // month: 'numeric',
+  // day: 'numeric',
+  // hour: 'numeric',
+  minute: 'numeric',
+  second: 'numeric',
+  fractionalSecondDigits: 2,
+  hour12: false,
+  // timeZone: 'UTC'
+}) }
         <ProfileRunner
           profile={profile}
           onChange={(state) => {

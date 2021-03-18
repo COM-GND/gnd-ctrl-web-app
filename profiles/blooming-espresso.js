@@ -35,7 +35,7 @@ const paramaters = [
   {
     name: "Bloom",
     time: {
-      defaultValue: 10,
+      defaultValue: 5,
     },
   },
   {
@@ -62,7 +62,7 @@ const paramaters = [
       type: "time",
       min: 0,
       max: 60,
-      defaultValue: 10,
+      defaultValue: 20,
       unit: "seconds",
       control: "slider",
     },

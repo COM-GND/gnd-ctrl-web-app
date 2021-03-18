@@ -7,12 +7,12 @@ const { execSync } = require("child_process");
 console.log("server.js ", __dirname);
 const next = require("next");
 const port = parseInt(process.env.PORT, 10) || 3000;
-const dev = process.env.NODE_ENV !== "production";
+const dev = false; //process.env.NODE_ENV !== "production";
 
 console.log(
-  "Starting HTTPS server ",
-  dev ? " - dev " : " - production ",
-  " with dir: ",
+  "Starting HTTPS server (",
+  process.env.NODE_ENV,
+  ") with dir: ",
   __dirname
 );
 
@@ -40,6 +40,6 @@ app.prepare().then(() => {
     })
     .listen({ port: port }, (err) => {
       if (err) throw err;
-      console.log(`> Https Ready on https://gnd-ctrl.test:${port}`);
+      console.log(`> Https Ready on port ${port}`);
     });
 });

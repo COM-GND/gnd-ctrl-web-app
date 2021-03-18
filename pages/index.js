@@ -99,7 +99,29 @@ export default function Home() {
           ['footer']
         ]}
       >
-        <Header/>
+        <Header>
+        <BluetoothConnectButton
+              label="Connect"
+              onConnect={async (device, server) => {
+                try {
+                  setComGndBtDevice(device);
+                  const service = await server.getPrimaryService(
+                    comGndConfig.bluetooth.serviceId
+                    // "8fc1ceca-b162-4401-9607-c8ac21383e4e"
+                  );
+                  setComGndBtService(service);
+                  device.addEventListener(
+                    "gattserverdisconnected",
+                    handleBtDisconnect
+                  );
+                } catch (error) {
+                  console.error("Bluetooth error:", error);
+                }
+                requestWakeLock(10);
+              }}
+            />
+          </Header>
+
         <Box fill={true} border={false} gridArea="main" overflow="hidden">
           <Profiler comGndBtDevice={comGndBtDevice} />
         </Box>
@@ -138,7 +160,7 @@ export default function Home() {
               setProfileData(() => [{ bars: 0, t: 0 }]);
             }}
           /> */}
-            <Button
+            {/* <Button
               disabled={comGndBtService == undefined}
               onClick={() => {
                 updateSensorData(() => [{ bars: 0, t: 0 }]);
@@ -147,28 +169,9 @@ export default function Home() {
               }}
             >
               {isRunning ? "Restart" : "Monitor"}
-            </Button>
+            </Button> */}
 
-            <BluetoothConnectButton
-              label="Connect"
-              onConnect={async (device, server) => {
-                try {
-                  setComGndBtDevice(device);
-                  const service = await server.getPrimaryService(
-                    comGndConfig.bluetooth.serviceId
-                    // "8fc1ceca-b162-4401-9607-c8ac21383e4e"
-                  );
-                  setComGndBtService(service);
-                  device.addEventListener(
-                    "gattserverdisconnected",
-                    handleBtDisconnect
-                  );
-                } catch (error) {
-                  console.error("Bluetooth error:", error);
-                }
-                requestWakeLock(10);
-              }}
-            />
+          
           </Box>
         <Box gridArea="footer" border={false}>
 

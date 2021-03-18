@@ -2,6 +2,7 @@ import react, { useState } from "react";
 import { Button } from "grommet";
 import comGndConfig from "../device-configs/com-gnd-default-config";
 import BluetoothIcon from "../svgs/bluetooth-24px.svg";
+import BluetoothConnectedIcon from "../svgs/bluetooth_connected-24px.svg";
 
 export default function BluetoothConnectButton({
   onConnect = () => {},
@@ -18,18 +19,26 @@ export default function BluetoothConnectButton({
     (charName) => comGndConfig.bluetooth.characteristics[charName].id
   );
 
+  // const getBtIcon = () => {
+  //   if(isC)
+  // };
+
   return (
     <div className="bluetooth-connect-button">
       <Button
         plain
         gap="xxsmall"
-        icon={
+        icon={isConnected ? 
+          <BluetoothConnectedIcon
+          viewBox="0 0 24 24"
+          style={{ fill: "white", width: "20px", height: "20px" }}
+        /> :
           <BluetoothIcon
             viewBox="0 0 24 24"
-            style={{ fill: "red", width: "16px", height: "16px" }}
+            style={{ fill: "white", width: "20px", height: "20px", opacity: ".6"}}
           />
         }
-        label={isConnected ? "Disconnect" : "Connect"}
+        // label={isConnected ? "Disconnect" : "Connect"}
         onClick={async (e) => {
           if (isConnected && btDevice) {
             try {
