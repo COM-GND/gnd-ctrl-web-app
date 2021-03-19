@@ -16,16 +16,19 @@ export default function ProfileRunner({
 }) {
   const interval = 250; // update frequency in MS
 
-  const [isWaitingForPump, setIsWaitingForPump] = useState(!pumpLevel);
+  const [isWaitingForPump, setIsWaitingForPump] = useState(pumpLevel === 0);
+  console.log('pumpLevel', pumpLevel);
+  const isWaitingForPumpRef = useRef(isWaitingForPump);
+  const pumpLevelRef = useRef(pumpLevel);
 
-  const [runState, _setRunState] = useState('stop');
+  const [runState, _setRunState] = useState("stop");
   const runStateRef = useRef(runState);
   const setRunState = (state) => {
     runStateRef.current = state;
     _setRunState(state);
   };
-  
-  // timer keeps the absolute time. 
+
+  // timer keeps the absolute time.
   const [timer, _setTimer] = useState(null);
   const timerRef = useRef(timer);
   const setTimer = (time) => {
@@ -33,13 +36,13 @@ export default function ProfileRunner({
     _setTimer(time);
   };
 
-  // runTime keeps the relative run-time of the profile. 
+  // runTime keeps the relative run-time of the profile.
   const [runTime, _setRunTime] = useState(0);
   const runTimeRef = useRef(runTime);
   const setRunTime = (time) => {
     runTimeRef.current = time;
     _setRunTime(time);
-  }
+  };
 
   // keeps the offset time of when the run was started
   const [startTime, _setStartTime] = useState(null);
@@ -50,8 +53,10 @@ export default function ProfileRunner({
   };
 
   const getRunningTime = () => {
-    if(runTime.current && timerRef.current) {
-      const time = startTimeRef.current ? timerRef.current - startTimeRef.current : 0;
+    if (runTime.current && timerRef.current) {
+      const time = startTimeRef.current
+        ? timerRef.current - startTimeRef.current
+        : 0;
       return time > 0 ? time : 0;
     }
     return 0;
@@ -60,13 +65,22 @@ export default function ProfileRunner({
   const handleTick = () => {
     const tickLength = Date.now() - timerRef.current;
     setTimer(timerRef.current + tickLength);
-    if (runStateRef.current === "play" && !isWaitingForPump) {
+    console.log(
+      "runStateRef",
+      runStateRef.current,
+      "pumpLevelRef.current",
+      pumpLevelRef.current
+    );
+    if (
+      runStateRef.current === "play" &&
+      pumpLevelRef.current !== null  && pumpLevelRef.current !== 0
+    ) {
       setRunTime(runTimeRef.current + tickLength);
       // const runningTime = getRunningTime();
       // console.log('tck', startTimeRef.current, timerRef.current) ;
       if (runTimeRef.current < profile.getTotalMs()) {
         const state = profile.getStateAtTime(runTimeRef.current);
-        console.log('state', state);
+        console.log("state", state);
         onChange(state);
       } else {
         // setRunState("stop");
@@ -83,23 +97,28 @@ export default function ProfileRunner({
     };
   }, []);
 
+  useEffect(() => {
+    pumpLevelRef.current = pumpLevel;
+  }, [pumpLevel]);
+  
   return (
     <Box direction="row" gap="xxsmall">
       {/* <Text>{runState ? getRunningTime() / 1000 : 0}</Text> */}
-      {isWaitingForPump && runState === "play" && <span>Power on machine to start.</span>}
+      {(pumpLevel == null || pumpLevel == 0) && runState === "play" && (
+        <span>Power on machine to start.</span>
+      )}
       <Button
         hoverIndicator={{
           color: "white",
           opacity: 0.1,
         }}
-
         margin="none"
         size="xsmall"
         onClick={() => {
           if (runState === "play") {
             setRunState("pause");
             onPause();
-          } else if(runState === 'pause') {
+          } else if (runState === "pause") {
             setRunState("play");
             onUnpause();
           } else {

@@ -51,18 +51,16 @@ export default function Chart({
   //   rechartsNormalizationFactor *
   //     sensorDataHistory[sensorDataHistory.length - 1].t || 0;
 
-  console.log(
-    "tRange",
-    tRange,
-    "rechartsScaleFactor",
-    rechartsScaleFactor,
-    "rechartsNormalizationFactor",
-    rechartsNormalizationFactor,
-    "chartWidth",
-    chartWidth,
-    // "sensorDatHistoryLineWidth",
-    // sensorDatHistoryLineWidth
-  );
+  // console.log(
+  //   "tRange",
+  //   tRange,
+  //   "rechartsScaleFactor",
+  //   rechartsScaleFactor,
+  //   "rechartsNormalizationFactor",
+  //   rechartsNormalizationFactor,
+  //   "chartWidth",
+  //   chartWidth,
+  // );
   const dataMsPerPx = tRange / width;
   const msPerPx = Math.max(40, dataMsPerPx); //width / tRange;
   const dataWidth = tMax / msPerPx;

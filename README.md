@@ -4,10 +4,33 @@
 
 GND-CTRL is an experimental web app for controlling the [COM-GND Espresso](https://github.com/COM-GND/espresso) Open Source Hardware project. It connects to the COM-GND control hardware module via Bluetooth and allows for advanced shot profiling. 
 
-This project is in alpha stage and under ongoing development - use with caution. 
+---
+WARNING: This project is in alpha stage and under ongoing development - use with caution. 
+
+---
 
 GND-CTRL relies on the experimental Web Bluetooth API. The api currently has [limited support](https://caniuse.com/web-bluetooth) and this app has been developed and tested for use with the Chrome browser. On iOS, Neither Chrome nor Safari currently support Web Bluetooth, but there are a number of alternative browsers (e.g. [Webble](https://apps.apple.com/us/app/webble/id1193531073)) available and designed for this purpose.  
 
+## Modular Hardware Approach
+
+COM-GND Espresso is designed to provide flexibility in what hardware modules are installed. The aim is to support varying levels of espresso machine modification and easy progressive upgrades. 
+
+The minimum required hardware is the COM-GND Base unit and the Pump Control Module. 
+
+Current Modules
+ - COM-GND Base: Serves as hub for other modules and provides bluetooth communication for pump power, pressure sensor, and target pressure values via BLE. 
+ - Pump Control: Allows for control of vibration pump power level by either manual dial or app control. Enables pre-infusion and basic profiling. 
+ - Pressure Sensor: Adds real-time pressure sensing. Enables true pressure profiling. 
+ - Rotary Encoder: Enable manual control of pump or pressure level through a rotary control. 
+ 
+
+ Future Modules
+ - Temperature PID
+ - Bluetooth Shot Scale
+
+## Profiles
+
+Profiles provide a framework for generating specific recipes. The basic profile is Time & Pressure (controlling pressure over time)
 ## Creating Custom Shot Profiles
 
 Profiles are stored in the `/profiles` directory. Each profile is a javascript class that extends the `profile` base class. 
