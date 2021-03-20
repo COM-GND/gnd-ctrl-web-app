@@ -1,7 +1,6 @@
 import dynamic from "next/dynamic";
 import { useState, useEffect, useRef } from "react";
 import { Box, Button, Grid, Text } from "grommet";
-import moment from "moment";
 import useComGndBtIsConnected from "../hooks/use-com-gnd-bt-is-connected";
 import ProfileRunner from "./profile-runner.js";
 import bloomingEspresso from "../profiles/blooming-espresso";
@@ -173,7 +172,7 @@ export default function Profiler({
         justify="between"
       >
         <Text size="small">
-          {startTime > 0 ? (
+          {isRunning && startTime > 0 ? (
             new Date(Date.now() - startTime).toLocaleTimeString("en-US", {
               minute: "numeric",
               second: "numeric",
@@ -197,6 +196,8 @@ export default function Profiler({
           onStart={() => {
             setStartTime(0);
             setIsRunning(true);
+            updateSensorDataHistory(() => [{ bars: 0, t: 0 }]);
+            updateProfileDataHistory(() => [{ bars: 0, t: 0 }]);
             onStart();
           }}
           onPause={() => {
@@ -208,9 +209,6 @@ export default function Profiler({
           }}
           onStop={() => {
             setIsRunning(false);
-            setStartTime(0);
-            updateSensorDataHistory(() => [{ bars: 0, t: 0 }]);
-            updateProfileDataHistory(() => [{ bars: 0, t: 0 }]);
             onStop();
           }}
         />

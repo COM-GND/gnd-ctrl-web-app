@@ -103,7 +103,7 @@ export default function Chart({
             strokeWidth={1}
             stroke={"hsla(0, 0%, 100%, .1)"}
           />
-          <ReferenceLine y={pressureTarget} stroke="red" />
+          <ReferenceLine y={pressureTarget} stroke="white" strokeDasharray="1 4"/>
           <YAxis
             dataKey="bars"
             domain={[0, 10]}

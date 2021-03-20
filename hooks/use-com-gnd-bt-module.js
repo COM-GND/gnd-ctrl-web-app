@@ -31,7 +31,7 @@ export default function useComGndModule(btDevice, sensorName) {
     async () => {
       // the characteristic writeValue may already be in progress from previsou writeValue
       // Here we use an async function to qeueu the write value if the previous write hasn't finished.
-      // TODO - this only ensure the most recent value is sent - do we want to ensure ALL values are sent? 
+      // TODO - this only ensures that the most recent value is sent - do we want to ensure ALL values are sent? 
       async function writeValue() {
         const textEncoder = new TextEncoder();
         //const encodedValue = textEncoder.encode(targetValueRef.current);

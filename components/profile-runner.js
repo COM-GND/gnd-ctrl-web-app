@@ -16,9 +16,9 @@ export default function ProfileRunner({
 }) {
   const interval = 250; // update frequency in MS
 
-  const [isWaitingForPump, setIsWaitingForPump] = useState(pumpLevel === 0);
-  console.log('pumpLevel', pumpLevel);
-  const isWaitingForPumpRef = useRef(isWaitingForPump);
+  // const [isWaitingForPump, setIsWaitingForPump] = useState(pumpLevel === 0);
+  // console.log('pumpLevel', pumpLevel);
+  // const isWaitingForPumpRef = useRef(isWaitingForPump);
   const pumpLevelRef = useRef(pumpLevel);
 
   const [runState, _setRunState] = useState("stop");
@@ -45,39 +45,39 @@ export default function ProfileRunner({
   };
 
   // keeps the offset time of when the run was started
-  const [startTime, _setStartTime] = useState(null);
-  const startTimeRef = useRef(startTime);
-  const setStartTime = (time) => {
-    startTimeRef.current = time;
-    _setStartTime(time);
-  };
+  // const [startTime, _setStartTime] = useState(null);
+  // const startTimeRef = useRef(startTime);
 
-  const getRunningTime = () => {
-    if (runTime.current && timerRef.current) {
-      const time = startTimeRef.current
-        ? timerRef.current - startTimeRef.current
-        : 0;
-      return time > 0 ? time : 0;
-    }
-    return 0;
-  };
+  // const setStartTime = (time) => {
+  //   startTimeRef.current = time;
+  //   _setStartTime(time);
+  // };
+
+  // const getRunningTime = () => {
+  //   if (runTime.current && timerRef.current) {
+  //     const time = startTimeRef.current
+  //       ? timerRef.current - startTimeRef.current
+  //       : 0;
+  //     return time > 0 ? time : 0;
+  //   }
+  //   return 0;
+  // };
 
   const handleTick = () => {
     const tickLength = Date.now() - timerRef.current;
     setTimer(timerRef.current + tickLength);
-    console.log(
-      "runStateRef",
-      runStateRef.current,
-      "pumpLevelRef.current",
-      pumpLevelRef.current
-    );
+    // console.log(
+    //   "runStateRef",
+    //   runStateRef.current,
+    //   "pumpLevelRef.current",
+    //   pumpLevelRef.current
+    // );
     if (
       runStateRef.current === "play" &&
       pumpLevelRef.current !== null  && pumpLevelRef.current !== 0
     ) {
+
       setRunTime(runTimeRef.current + tickLength);
-      // const runningTime = getRunningTime();
-      // console.log('tck', startTimeRef.current, timerRef.current) ;
       if (runTimeRef.current < profile.getTotalMs()) {
         const state = profile.getStateAtTime(runTimeRef.current);
         console.log("state", state);
@@ -86,7 +86,13 @@ export default function ProfileRunner({
         // setRunState("stop");
         // onStop();
       }
-    }
+    } else if( runTimeRef.current > 0 && (runStateRef.current === "play" || runStateRef.current === 'pause') &&
+      (pumpLevelRef.current == null  || pumpLevelRef.current == 0)) {
+        // if the pump power is turned off while in play state, switch to stop state
+        setRunState("stop");
+        setRunTime(0);
+        onStop();
+      }
   };
 
   useEffect(() => {
@@ -100,7 +106,7 @@ export default function ProfileRunner({
   useEffect(() => {
     pumpLevelRef.current = pumpLevel;
   }, [pumpLevel]);
-  
+
   return (
     <Box direction="row" gap="xxsmall">
       {/* <Text>{runState ? getRunningTime() / 1000 : 0}</Text> */}
@@ -123,7 +129,7 @@ export default function ProfileRunner({
             onUnpause();
           } else {
             setRunState("play");
-            setStartTime(Date.now());
+            // setStartTime(0);
             onStart();
           }
         }}
@@ -145,6 +151,7 @@ export default function ProfileRunner({
         disabled={runState === "stop"}
         onClick={() => {
           setRunState("stop");
+          setRunTime(0);
           onStop();
         }}
         icon={
