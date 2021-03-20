@@ -185,6 +185,7 @@ export default function Profiler({
         <ProfileRunner
           profile={profile}
           pumpLevel={pumpLevel}
+          disabled={!isConnected}
           onChange={(state) => {
             updateProfileDataHistory((profileDataHistory) => {
               return [...profileDataHistory, state];

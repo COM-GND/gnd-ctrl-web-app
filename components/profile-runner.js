@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Box, Button, Text } from "grommet";
+import { Box, Button, Text, Layer } from "grommet";
 import PlayIcon from "../svgs/play_arrow-24px.svg";
 import StopIcon from "../svgs/stop-24px.svg";
 import PauseIcon from "../svgs/pause-24px.svg";
@@ -8,6 +8,7 @@ export default function ProfileRunner({
   profile,
   liveData,
   pumpLevel,
+  disabled,
   onChange = () => {},
   onStart = () => {},
   onUnpause = () => {},
@@ -74,9 +75,9 @@ export default function ProfileRunner({
     // );
     if (
       runStateRef.current === "play" &&
-      pumpLevelRef.current !== null  && pumpLevelRef.current !== 0
+      pumpLevelRef.current !== null &&
+      pumpLevelRef.current !== 0
     ) {
-
       setRunTime(runTimeRef.current + tickLength);
       if (runTimeRef.current < profile.getTotalMs()) {
         const state = profile.getStateAtTime(runTimeRef.current);
@@ -86,13 +87,16 @@ export default function ProfileRunner({
         // setRunState("stop");
         // onStop();
       }
-    } else if( runTimeRef.current > 0 && (runStateRef.current === "play" || runStateRef.current === 'pause') &&
-      (pumpLevelRef.current == null  || pumpLevelRef.current == 0)) {
-        // if the pump power is turned off while in play state, switch to stop state
-        setRunState("stop");
-        setRunTime(0);
-        onStop();
-      }
+    } else if (
+      runTimeRef.current > 0 &&
+      (runStateRef.current === "play" || runStateRef.current === "pause") &&
+      (pumpLevelRef.current == null || pumpLevelRef.current == 0)
+    ) {
+      // if the pump power is turned off while in play state, switch to stop state
+      setRunState("stop");
+      setRunTime(0);
+      onStop();
+    }
   };
 
   useEffect(() => {
@@ -110,14 +114,20 @@ export default function ProfileRunner({
   return (
     <Box direction="row" gap="xxsmall">
       {/* <Text>{runState ? getRunningTime() / 1000 : 0}</Text> */}
+
       {(pumpLevel == null || pumpLevel == 0) && runState === "play" && (
-        <span>Power on machine to start.</span>
+        <Layer modal={false} background="transparent">
+          <Box border={false} pad="medium" background={{opacity: .8, color: "dark-1"}}>
+            <Text>Power on machine to start.</Text>
+          </Box>
+        </Layer>
       )}
       <Button
         hoverIndicator={{
           color: "white",
           opacity: 0.1,
         }}
+        disabled={disabled}
         margin="none"
         size="xsmall"
         onClick={() => {
@@ -148,7 +158,7 @@ export default function ProfileRunner({
         }
       />
       <Button
-        disabled={runState === "stop"}
+        disabled={runState === "stop" || disabled}
         onClick={() => {
           setRunState("stop");
           setRunTime(0);

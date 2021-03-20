@@ -12,7 +12,16 @@ const theme = {
       }
     },
     edgeSize: {
-      small: "8px" // the padding for an icon-only button
+      small: "8px", // the padding for an icon-only button
+      medium: "16px",
+      large: "24px"
+    },
+    breakpoints: {
+      //https://grommet-nextjs.herokuapp.com/documentation/grommet/Box?theme=light
+      small: {
+        edgeSize: {
+        }
+      }
     }
   }
 }
