@@ -19,20 +19,29 @@ export default function Chart({
   recipeData,
   timeDomain = 60000,
   pressureTarget = 5.0,
-  zoom = 1
+  zoom = 1,
 }) {
   // console.log("target", pressureTarget);
 
-  const { ref, width, height } = useDimensions();
+  const userScrolledRef = useRef(false);
 
-  const xMax =
-    sensorDataHistory[sensorDataHistory.length - 1].t < timeDomain
-      ? timeDomain
-      : sensorDataHistory[sensorDataHistory.length - 1].t;
-  const xMin = xMax - timeDomain;
+  const { ref, width, height } = useDimensions();
+  const pxPerMs = 0.025 * zoom;
+
+  const mostRecentSensorT =
+    sensorDataHistory.length > 0
+      ? sensorDataHistory[sensorDataHistory.length - 1].t
+      : 0;
+
+  const xMax = Math.max(mostRecentSensorT, timeDomain);
 
   const tMin = 0;
-  const tMax = Math.max(xMax, recipeData[recipeData.length - 1].t);
+  // max Time is the large of the sensorData max t, the recipeData max t, the timeDomain, or the available space in the window.
+  const tMax = Math.max(
+    xMax,
+    recipeData[recipeData.length - 1].t,
+    width / pxPerMs
+  );
   const tRange = tMax - tMin;
 
   const filteredSensorDataHistory = filterPressureData(sensorDataHistory);
@@ -41,32 +50,33 @@ export default function Chart({
   // ie. rechartsScale = (width / tRange)
   // we need to invert that
   // ie. (tRange / width)
-  // and then increase
 
-  const rechartsScaleFactor = width / tRange || 1;
+  const chartHPadding = 0;
+  const chartContainerWidth = width + chartHPadding;
+  const rechartsScaleFactor = chartContainerWidth / tRange || 1;
   const rechartsNormalizationFactor = 1 / rechartsScaleFactor;
-  const chartWidth = rechartsNormalizationFactor * width * 0.025 * zoom;
-  const chartVisibleMs = (width / chartWidth) * tRange;
+  const chartWidth =
+    rechartsNormalizationFactor * chartContainerWidth * pxPerMs;
+  const chartVisibleMs = (chartContainerWidth / chartWidth) * tRange;
+
+  const playHeadXPos = mostRecentSensorT * pxPerMs;
+
   // const sensorDatHistoryLineWidth =
   //   rechartsNormalizationFactor *
   //     sensorDataHistory[sensorDataHistory.length - 1].t || 0;
 
-  // console.log(
-  //   "tRange",
-  //   tRange,
-  //   "rechartsScaleFactor",
-  //   rechartsScaleFactor,
-  //   "rechartsNormalizationFactor",
-  //   rechartsNormalizationFactor,
-  //   "chartWidth",
-  //   chartWidth,
-  // );
-  const dataMsPerPx = tRange / width;
-  const msPerPx = Math.max(40, dataMsPerPx); //width / tRange;
-  const dataWidth = tMax / msPerPx;
-  // const chartWidth = Math.max(width, dataWidth);
-
-  //console.log('tRange', tRange, 'dataWidth', dataWidth, 'chartWidth', chartWidth, 'timeDomain', timeDomain, 'msPerPx', msPerPx, 'dataMsPerPx', dataMsPerPx);
+  console.log(
+    "tRange",
+    tRange,
+    "rechartsScaleFactor",
+    rechartsScaleFactor,
+    "rechartsNormalizationFactor",
+    rechartsNormalizationFactor,
+    "chartWidth",
+    chartWidth,
+    "playHeadXPos",
+    playHeadXPos
+  );
 
   // TODO the recipe line with curve smoothing causes rechart performance issues when it the chart redraws.
   // look for ways to improve performance
@@ -79,9 +89,58 @@ export default function Chart({
     recipeData.push({ t: xMax, bars: recipeData[recipeData.length - 1].bars });
   }
 
+  if (ref.current) {
+    const isRightAligned =
+      ref.current.scrollWidth - Math.abs(ref.current.scrollLeft) <=
+      ref.current.clientWidth + 10;
+    // console.log(
+    //   "left", ref.current.scrollWidth - Math.abs(ref.current.scrollLeft),
+    //   "clientWidth",
+    //   ref.current.clientWidth
+    // );
+    if (isRightAligned) {
+      userScrolledRef.current = false;
+    }
+
+    let shouldScroll = false;
+    if (
+      userScrolledRef.current == false &&
+      playHeadXPos > chartContainerWidth
+    ) {
+      shouldScroll = true;
+      ref.current.scrollTo({
+        left: playHeadXPos - width / 2, // scroll the container so that the playhead is centered.
+        top: 0,
+        behavior: "smooth",
+      });
+    }
+    console.log(
+      "isRightAligned",
+      "right",
+      isRightAligned,
+      "touched",
+      userScrolledRef.current,
+      "should",
+      shouldScroll
+    );
+  }
+
+  // if (
+  //   ref.current &&
+  //   // userScrolledRef.current === false &&
+  //   playHeadXPos > chartContainerWidth
+  // ) {
+  //   ref.current.scrollTo({
+  //     left: playHeadXPos,
+  //     top: 0,
+  //     behavior: "smooth",
+  //   });
+  // }
+
   return (
     <div
       ref={ref}
+      onWheel={() => (userScrolledRef.current = true)}
       style={{
         width: "100%",
         height: "100%",
@@ -89,78 +148,83 @@ export default function Chart({
         overflowY: "hidden",
         display: "flex",
         /* When the live data line is wider than the visible chart, stick to the right of the scroll */
-        flexDirection:
-        sensorDataHistory[sensorDataHistory.length - 1].t > chartVisibleMs ? "row-reverse" : "row",
+        /*flexDirection:
+        sensorDataHistory[sensorDataHistory.length - 1].t > chartVisibleMs ? "row-reverse" : "row",*/
       }}
     >
-        <LineChart
-          width={chartWidth}
-          height={height}
-          margin={{ top: 10, right: 10, left: 10, bottom: 0 }}
-        >
-          <CartesianGrid
-            vertical={false}
-            strokeWidth={1}
-            stroke={"hsla(0, 0%, 100%, .1)"}
-          />
-          <ReferenceLine y={pressureTarget} stroke="white" strokeDasharray="1 4"/>
-          <YAxis
-            dataKey="bars"
-            domain={[0, 10]}
-            interval="preserveEnd"
-            // minTickGap={10}
-            type="number"
-            allowDataOverflow={true}
-            axisLine={false}
-            tickCount={10}
-            width={10}
-            mirror={true}
-          />
-          <XAxis
-            dataKey="t"
-            interval={0}
-            allowDecimals={true}
-            type="number"
-            tickCount={Math.floor(tRange / 1000) + 1}
-            // domain={[min => xMin , max => xMax]}
-            tickFormatter={(value) => parseFloat(value / 1000).toFixed(0)}
-          />
-          {/* <Tooltip /> */}
-          {/* <CartesianGrid stroke="#f5f5f5" /> */}
+      <LineChart
+        width={chartWidth}
+        height={height}
+        margin={{ top: 10, right: 10, left: 10, bottom: 0 }}
+      >
+        <CartesianGrid
+          vertical={false}
+          strokeWidth={1}
+          stroke={"hsla(0, 0%, 100%, .1)"}
+        />
+        <ReferenceLine
+          y={pressureTarget}
+          stroke="white"
+          strokeDasharray="1 4"
+        />
 
-          <Line
-            name="Recipe Profile"
-            isAnimationActive={false}
-            id="recipe-profile"
-            type="monotoneX"
-            data={recipeData}
-            dataKey="bars"
-            stroke="hsla(0, 0%, 100%, .2)"
-            strokeWidth={6}
-            dot={{ fill: "hsla(0, 0%, 100%, .5)", strokeWidth: 0, r: 3 }}
-          />
-          <Line
-            name="Live Pressure"
-            isAnimationActive={false}
-            name="live-bars"
-            id="live-bars"
-            dataKey="bars"
-            data={filteredSensorDataHistory}
-            stroke="hsla(0, 0%, 100%, 1)"
-            dot={false}
-            // dot={{ fill: "hsla(0, 0%, 100%, .5)", strokeWidth: 0, r: 4 }}
-          />
-          <Line
-            name="Target Pressure"
-            dot={{ fill: "hsla(0, 0%, 100%, .5)", strokeWidth: 0, r: 1 }}
-            stroke="hsla(0, 0%, 100%, 0)"
-            isAnimationActive={false}
-            name="target-bars"
-            id="target-bars"
-            dataKey="bars"
-            data={profileDataHistory}
-          />
-        </LineChart>
+        <YAxis
+          dataKey="bars"
+          domain={[0, 10]}
+          interval="preserveEnd"
+          // minTickGap={10}
+          type="number"
+          allowDataOverflow={true}
+          axisLine={false}
+          tickCount={10}
+          width={10}
+          mirror={true}
+        />
+        <XAxis
+          dataKey="t"
+          interval={0}
+          allowDecimals={true}
+          type="number"
+          tickCount={Math.floor(tRange / 1000) + 1}
+          domain={[0, (max) => (chartVisibleMs > xMax ? chartVisibleMs : xMax)]}
+          tickFormatter={(value) => parseFloat(value / 1000).toFixed(0)}
+        />
+        {/* <Tooltip /> */}
+        {/* <CartesianGrid stroke="#f5f5f5" /> */}
+
+        <Line
+          name="Recipe Profile"
+          isAnimationActive={false}
+          id="recipe-profile"
+          type="monotoneX"
+          data={recipeData}
+          dataKey="bars"
+          stroke="hsla(0, 0%, 100%, .2)"
+          strokeWidth={6}
+          dot={{ fill: "hsla(0, 0%, 100%, .5)", strokeWidth: 0, r: 3 }}
+        />
+        <Line
+          name="Live Pressure"
+          isAnimationActive={false}
+          name="live-bars"
+          id="live-bars"
+          dataKey="bars"
+          data={filteredSensorDataHistory}
+          stroke="hsla(0, 0%, 100%, 1)"
+          dot={false}
+          // dot={{ fill: "hsla(0, 0%, 100%, .5)", strokeWidth: 0, r: 4 }}
+        />
+        <Line
+          name="Target Pressure"
+          dot={{ fill: "hsla(0, 0%, 100%, .5)", strokeWidth: 0, r: 1 }}
+          stroke="hsla(0, 0%, 100%, 0)"
+          isAnimationActive={false}
+          name="target-bars"
+          id="target-bars"
+          dataKey="bars"
+          data={profileDataHistory}
+        />
+      </LineChart>
     </div>
   );
 }

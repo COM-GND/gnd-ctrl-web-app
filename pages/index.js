@@ -84,7 +84,7 @@ export default function Home() {
   return (
     <Grommet full theme={theme} themeMode="dark">
       <Head>
-        <title>Create Next App</title>
+        <title>GND CTRL</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
 

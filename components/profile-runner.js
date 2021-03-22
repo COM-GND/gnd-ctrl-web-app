@@ -74,9 +74,9 @@ export default function ProfileRunner({
     //   pumpLevelRef.current
     // );
     if (
-      runStateRef.current === "play" &&
+      runStateRef.current === "play" /*&&
       pumpLevelRef.current !== null &&
-      pumpLevelRef.current !== 0
+      pumpLevelRef.current !== 0*/
     ) {
       setRunTime(runTimeRef.current + tickLength);
       if (runTimeRef.current < profile.getTotalMs()) {
@@ -129,7 +129,7 @@ export default function ProfileRunner({
         }}
         disabled={disabled}
         margin="none"
-        size="xsmall"
+        size="small"
         onClick={() => {
           if (runState === "play") {
             setRunState("pause");

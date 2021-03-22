@@ -1,10 +1,12 @@
 import dynamic from "next/dynamic";
 import { useState, useEffect, useRef } from "react";
-import { Box, Button, Grid, Text } from "grommet";
+import { Box, Button, Grid, Text, Layer } from "grommet";
 import useComGndBtIsConnected from "../hooks/use-com-gnd-bt-is-connected";
 import ProfileRunner from "./profile-runner.js";
 import bloomingEspresso from "../profiles/blooming-espresso";
 import useComGndModule from "../hooks/use-com-gnd-bt-module";
+import NodeAddIcon from "../svgs/note_add-24px.svg";
+import DeleteIcon from "../svgs/delete-24px.svg";
 import Slider, { Range } from "rc-slider";
 import "rc-slider/assets/index.css";
 
@@ -130,7 +132,7 @@ export default function Profiler({
           recipeData={profileData}
           pressureTarget={pressureTarget}
         />
-        <Box pad={{ bottom: "32px", top: "8px", left: "5px", right: "5px"}}>
+        <Box pad={{ bottom: "32px", top: "8px", left: "5px", right: "5px" }}>
           <Slider
             disabled={!isConnected}
             vertical={true}
@@ -171,6 +173,7 @@ export default function Profiler({
         gridArea="controls"
         justify="between"
       >
+        <Box></Box>
         <Text size="small">
           {isRunning && startTime > 0 ? (
             new Date(Date.now() - startTime).toLocaleTimeString("en-US", {
@@ -214,6 +217,49 @@ export default function Profiler({
           }}
         />
       </Box>
+      {!isRunning && (startTime > 0) &&
+      <Layer full="horizontal" modal={false} position="bottom">
+        <Box
+          direction="row"
+          gap="small"
+          fill={true}
+          alignContent="center"
+          align="center"
+          justify="between"
+          pad={{vertical: "xsmall", horizontal:"medium"}}
+        >
+          <Box basis="1/3" flex={false}/>
+          <Box pad={{ horizontal: "medium" }} basis="1/3" flex={false} align="center">
+            <Text size="small">Profile Finished</Text>
+          </Box>
+          <Box direction="row" basis="1/3" flex={false} justify="end"> 
+            <Button
+              size="small"
+              pad="small"
+              primary={false}
+              label="Archive"
+              icon={
+                <NodeAddIcon
+                  viewBox="0 0 24 24"
+                  style={{ fill: "white", width: "20px", height: "20px" }}
+                />
+              }
+            />
+            <Button
+              size="small"
+              label="Disard"
+              pad="small"
+              primary={false}
+              icon={
+                <DeleteIcon
+                  viewBox="0 0 24 24"
+                  style={{ fill: "white", width: "20px", height: "20px" }}
+                />
+              }
+            />
+          </Box>
+        </Box>
+      </Layer>}
     </Grid>
   );
 }
