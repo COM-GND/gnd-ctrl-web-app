@@ -38,6 +38,8 @@ export default function Profiler({
 
   const isConnected = useComGndBtIsConnected(comGndBtDevice);
 
+  const [showSaveHistory, setShowSaveHistory] = useState(false);
+
   // pressure is the pressure sensor reading in bars from the com-gnd pressure sensor module hardware
   // value is a float between 0.0 and 10.0 (bars)
   let [pressure, pressureTimeStamp, setPressure] = useComGndModule(
@@ -199,6 +201,8 @@ export default function Profiler({
           }}
           onStart={() => {
             setStartTime(0);
+            // initialize the target pressure before beginning
+            setPressureTarget(profileData[0].bars);
             setIsRunning(true);
             updateSensorDataHistory(() => [{ bars: 0, t: 0 }]);
             updateProfileDataHistory(() => [{ bars: 0, t: 0 }]);
@@ -213,26 +217,42 @@ export default function Profiler({
           }}
           onStop={() => {
             setIsRunning(false);
+            setShowSaveHistory(true);
             onStop();
           }}
         />
       </Box>
-      {!isRunning && (startTime > 0) &&
-      <Layer full="horizontal" modal={false} position="bottom">
+      {showSaveHistory &&
+      <Layer full="horizontal" modal={false} position="bottom" responsive={false}  style={{minHeight: '24px'}}>
         <Box
           direction="row"
           gap="small"
           fill={true}
           alignContent="center"
           align="center"
+          alignSelf="end"
           justify="between"
-          pad={{vertical: "xsmall", horizontal:"medium"}}
+          pad={{vertical: "xsmall", horizontal:"small"}}
+          border={true}
+         
         >
-          <Box basis="1/3" flex={false}/>
-          <Box pad={{ horizontal: "medium" }} basis="1/3" flex={false} align="center">
-            <Text size="small">Profile Finished</Text>
+          <Box pad={{ horizontal: "medium" }} basis="2/3" flex={false} align="start">
+            <Text size="small">Profile complete. Archive data in recipe history? </Text>
           </Box>
           <Box direction="row" basis="1/3" flex={false} justify="end"> 
+          <Button
+              size="small"
+              label="Disard"
+              pad="small"
+              primary={false}
+              icon={
+                <DeleteIcon
+                  viewBox="0 0 24 24"
+                  style={{ fill: "white", width: "20px", height: "20px" }}
+                />
+              }
+              onClick={() => setShowSaveHistory(false)}
+            />
             <Button
               size="small"
               pad="small"
@@ -245,18 +265,7 @@ export default function Profiler({
                 />
               }
             />
-            <Button
-              size="small"
-              label="Disard"
-              pad="small"
-              primary={false}
-              icon={
-                <DeleteIcon
-                  viewBox="0 0 24 24"
-                  style={{ fill: "white", width: "20px", height: "20px" }}
-                />
-              }
-            />
+           
           </Box>
         </Box>
       </Layer>}

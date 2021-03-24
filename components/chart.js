@@ -65,18 +65,18 @@ export default function Chart({
   //   rechartsNormalizationFactor *
   //     sensorDataHistory[sensorDataHistory.length - 1].t || 0;
 
-  console.log(
-    "tRange",
-    tRange,
-    "rechartsScaleFactor",
-    rechartsScaleFactor,
-    "rechartsNormalizationFactor",
-    rechartsNormalizationFactor,
-    "chartWidth",
-    chartWidth,
-    "playHeadXPos",
-    playHeadXPos
-  );
+  // console.log(
+  //   "tRange",
+  //   tRange,
+  //   "rechartsScaleFactor",
+  //   rechartsScaleFactor,
+  //   "rechartsNormalizationFactor",
+  //   rechartsNormalizationFactor,
+  //   "chartWidth",
+  //   chartWidth,
+  //   "playHeadXPos",
+  //   playHeadXPos
+  // );
 
   // TODO the recipe line with curve smoothing causes rechart performance issues when it the chart redraws.
   // look for ways to improve performance
@@ -114,15 +114,15 @@ export default function Chart({
         behavior: "smooth",
       });
     }
-    console.log(
-      "isRightAligned",
-      "right",
-      isRightAligned,
-      "touched",
-      userScrolledRef.current,
-      "should",
-      shouldScroll
-    );
+    // console.log(
+    //   "isRightAligned",
+    //   "right",
+    //   isRightAligned,
+    //   "touched",
+    //   userScrolledRef.current,
+    //   "should",
+    //   shouldScroll
+    // );
   }
 
   // if (

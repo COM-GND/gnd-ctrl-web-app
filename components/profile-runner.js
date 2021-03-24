@@ -74,9 +74,9 @@ export default function ProfileRunner({
     //   pumpLevelRef.current
     // );
     if (
-      runStateRef.current === "play" /*&&
+      runStateRef.current === "play" &&
       pumpLevelRef.current !== null &&
-      pumpLevelRef.current !== 0*/
+      pumpLevelRef.current !== 0
     ) {
       setRunTime(runTimeRef.current + tickLength);
       if (runTimeRef.current < profile.getTotalMs()) {
@@ -115,8 +115,8 @@ export default function ProfileRunner({
     <Box direction="row" gap="xxsmall">
       {/* <Text>{runState ? getRunningTime() / 1000 : 0}</Text> */}
 
-      {(pumpLevel == null || pumpLevel == 0) && runState === "play" && (
-        <Layer modal={false} background="transparent">
+      {(pumpLevel == null || pumpLevel == 0) && runTime == 0 && runState === "play" && (
+        <Layer modal={false} background="transparent" responsive={false}>
           <Box border={false} pad="medium" background={{opacity: .8, color: "dark-1"}}>
             <Text>Power on machine to start.</Text>
           </Box>
@@ -138,8 +138,9 @@ export default function ProfileRunner({
             setRunState("play");
             onUnpause();
           } else {
+            // setRunTime(0);
             setRunState("play");
-            // setStartTime(0);
+            setRunTime(0);
             onStart();
           }
         }}
