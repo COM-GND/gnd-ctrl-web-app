@@ -86,10 +86,12 @@ export default function Home() {
       <Head>
         <title>GND CTRL</title>
         <link rel="icon" href="/favicon.ico" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover"></meta>
       </Head>
 
       <Grid
         fill
+        pad={{horizontal: "small"}}
         rows={["auto", "flex", "auto", "auto"]}
         columns={["full"]}
         areas={[

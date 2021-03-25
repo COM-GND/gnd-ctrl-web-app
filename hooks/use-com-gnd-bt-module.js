@@ -148,8 +148,13 @@ export default function useComGndModule(btDevice, sensorName) {
         // const textDecoder = new TextDecoder("ascii");
         // value = parseFloat(textDecoder.decode(event.target.value.buffer));
         value = new Float32Array(event.target.value.buffer)[0];
-        // round to 2 deciman places
-        value = Math.round(value * 100) / 100;
+        if(!value) {
+          console.error('use-com-gnd-bt-module error at handleCharacteristicValueChanged:', value);
+          value = 0;
+        } else {
+           // round to 2 deciman places
+          value = Math.round(value * 100) / 100;
+        }
       } else {
         value = event.target.value.buffer;
         // console.log("update:", event.target.value.buffer);

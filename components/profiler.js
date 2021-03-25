@@ -134,9 +134,9 @@ export default function Profiler({
           recipeData={profileData}
           pressureTarget={pressureTarget}
         />
-        <Box pad={{ bottom: "32px", top: "8px", left: "5px", right: "5px" }}>
+        <Box width="28px" pad={{ bottom: "32px", top: "8px"}} direction="row" justify="center">
           <Slider
-            disabled={!isConnected}
+            disabled={!isConnected && !isRunning}
             vertical={true}
             min={0}
             max={1000}
@@ -151,16 +151,16 @@ export default function Profiler({
             handleStyle={{
               border: "none",
               opacity: ".3",
-              width: "20px",
-              height: "20px",
-              marginLeft: "-8px",
+              width: "24px",
+              height: "24px",
+              marginLeft: "-10px",
             }}
             trackStyle={{
-              opacity: ".1",
+              opacity: "0",
               background: "white",
             }}
             railStyle={{
-              opacity: ".1",
+              opacity: "0",
             }}
           />
           {/* <Range  vertical={true}/> */}

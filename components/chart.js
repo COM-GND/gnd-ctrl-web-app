@@ -11,6 +11,8 @@ import {
 } from "recharts";
 
 import useDimensions from "react-cool-dimensions";
+import { ResizeObserver } from "@juggle/resize-observer";
+
 import filterPressureData from "../utils/filter-pressure-data";
 
 export default function Chart({
@@ -25,7 +27,7 @@ export default function Chart({
 
   const userScrolledRef = useRef(false);
 
-  const { ref, width, height } = useDimensions();
+  const { ref, width, height } = useDimensions({ polyfill: ResizeObserver });
   const pxPerMs = 0.025 * zoom;
 
   const mostRecentSensorT =
@@ -162,11 +164,6 @@ export default function Chart({
           strokeWidth={1}
           stroke={"hsla(0, 0%, 100%, .1)"}
         />
-        <ReferenceLine
-          y={pressureTarget}
-          stroke="white"
-          strokeDasharray="1 4"
-        />
 
         <YAxis
           dataKey="bars"
@@ -223,6 +220,11 @@ export default function Chart({
           id="target-bars"
           dataKey="bars"
           data={profileDataHistory}
+        />
+         <ReferenceLine
+          y={pressureTarget}
+          stroke="hsla(0, 0%, 100%, .9"
+          strokeDasharray="1 4"
         />
       </LineChart>
     </div>

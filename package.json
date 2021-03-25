@@ -10,6 +10,7 @@
     "start-https": "NODE_ENV=production node ./https-server.js"
   },
   "dependencies": {
+    "@juggle/resize-observer": "^3.3.0",
     "@svgr/webpack": "^5.5.0",
     "d3-interpolate": "^2.0.1",
     "d3-interpolate-curve": "^1.0.2",

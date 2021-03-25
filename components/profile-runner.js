@@ -90,7 +90,7 @@ export default function ProfileRunner({
     } else if (
       runTimeRef.current > 0 &&
       (runStateRef.current === "play" || runStateRef.current === "pause") &&
-      (pumpLevelRef.current == null || pumpLevelRef.current == 0)
+       pumpLevelRef.current === 0
     ) {
       // if the pump power is turned off while in play state, switch to stop state
       setRunState("stop");

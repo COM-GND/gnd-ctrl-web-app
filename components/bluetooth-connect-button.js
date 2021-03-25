@@ -31,11 +31,11 @@ export default function BluetoothConnectButton({
         icon={isConnected ? 
           <BluetoothConnectedIcon
           viewBox="0 0 24 24"
-          style={{ fill: "white", width: "20px", height: "20px" }}
+          style={{ fill: "white", width: "24px", height: "24px" }}
         /> :
           <BluetoothIcon
             viewBox="0 0 24 24"
-            style={{ fill: "white", width: "20px", height: "20px", opacity: ".6"}}
+            style={{ fill: "white", width: "24px", height: "24px", opacity: ".6"}}
           />
         }
         // label={isConnected ? "Disconnect" : "Connect"}
