@@ -45,25 +45,6 @@ export default function ProfileRunner({
     _setRunTime(time);
   };
 
-  // keeps the offset time of when the run was started
-  // const [startTime, _setStartTime] = useState(null);
-  // const startTimeRef = useRef(startTime);
-
-  // const setStartTime = (time) => {
-  //   startTimeRef.current = time;
-  //   _setStartTime(time);
-  // };
-
-  // const getRunningTime = () => {
-  //   if (runTime.current && timerRef.current) {
-  //     const time = startTimeRef.current
-  //       ? timerRef.current - startTimeRef.current
-  //       : 0;
-  //     return time > 0 ? time : 0;
-  //   }
-  //   return 0;
-  // };
-
   const handleTick = () => {
     const tickLength = Date.now() - timerRef.current;
     setTimer(timerRef.current + tickLength);
@@ -90,12 +71,12 @@ export default function ProfileRunner({
     } else if (
       runTimeRef.current > 0 &&
       (runStateRef.current === "play" || runStateRef.current === "pause") &&
-       pumpLevelRef.current === 0
+      pumpLevelRef.current === 0
     ) {
       // if the pump power is turned off while in play state, switch to stop state
-      setRunState("stop");
-      setRunTime(0);
-      onStop();
+      // setRunState("stop");
+      // setRunTime(0);
+      // onStop();
     }
   };
 
@@ -112,16 +93,22 @@ export default function ProfileRunner({
   }, [pumpLevel]);
 
   return (
-    <Box direction="row" gap="xxsmall">
+    <Box direction="row" gap="xxsmall" className="profile-runner">
       {/* <Text>{runState ? getRunningTime() / 1000 : 0}</Text> */}
 
-      {(pumpLevel == null || pumpLevel == 0) && runTime == 0 && runState === "play" && (
-        <Layer modal={false} background="transparent" responsive={false}>
-          <Box border={false} pad="medium" background={{opacity: .8, color: "dark-1"}}>
-            <Text>Power on machine to start.</Text>
-          </Box>
-        </Layer>
-      )}
+      {(pumpLevel == null || pumpLevel == 0) &&
+        runTime == 0 &&
+        runState === "play" && (
+          <Layer modal={false} background="transparent" responsive={false}>
+            <Box
+              border={false}
+              pad="medium"
+              background={{ opacity: 0.8, color: "dark-1" }}
+            >
+              <Text>Power on machine to start.</Text>
+            </Box>
+          </Layer>
+        )}
       <Button
         hoverIndicator={{
           color: "white",
@@ -148,12 +135,12 @@ export default function ProfileRunner({
           runState === "play" ? (
             <PauseIcon
               viewBox="0 0 24 24"
-              style={{ fill: "white", width: "16px", height: "16px" }}
+              style={{ fill: "white", width: "24px", height: "24px" }}
             />
           ) : (
             <PlayIcon
               viewBox="0 0 24 24"
-              style={{ fill: "white", width: "16px", height: "16px" }}
+              style={{ fill: "white", width: "24px", height: "24px" }}
             />
           )
         }
@@ -168,7 +155,7 @@ export default function ProfileRunner({
         icon={
           <StopIcon
             viewBox="0 0 24 24"
-            style={{ fill: "white", width: "16px", height: "16px" }}
+            style={{ fill: "white", width: "24px", height: "24px" }}
           />
         }
       />

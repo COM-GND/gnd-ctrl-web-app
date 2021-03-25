@@ -120,12 +120,15 @@ export default function Profiler({
       areas={[["main"], ["controls"]]}
       rows={["flex", "auto"]}
       columns={["auto"]}
+      className="profiler"
     >
       <Box
         fill="horizontal"
         pad={{ vertical: "none", horizontal: "none" }}
         gridArea="main"
         direction="row"
+        className="profiler__main"
+        style={{width: 'auto' /* <- prevents a safari bug that causes width to grow forever */}}
       >
         <Chart
           sensorDataHistory={sensorDataHistory}

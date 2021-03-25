@@ -142,6 +142,7 @@ export default function Chart({
   return (
     <div
       ref={ref}
+      className="chart__scroll"
       onWheel={() => (userScrolledRef.current = true)}
       style={{
         width: "100%",
