@@ -42,9 +42,12 @@ export default function Profiler({
 
   // pressure is the pressure sensor reading in bars from the com-gnd pressure sensor module hardware
   // value is a float between 0.0 and 10.0 (bars)
-  let [pressure, pressureTimeStamp, setPressure] = useComGndModule(
+  let [pressure, pressureTimeStamp, readPressure, setPressure] = useComGndModule(
     comGndBtDevice,
-    "pressureSensor"
+    "pressureSensor",
+    true,
+    false, 
+    true
   );
 
   // pressureTarget is the target pressure according to the com-gnd hardware
@@ -53,14 +56,18 @@ export default function Profiler({
   let [
     pressureTarget,
     pressureTargetTimeStamp,
+    readPressureTarget,
     setPressureTarget,
-  ] = useComGndModule(comGndBtDevice, "pressureTarget");
+  ] = useComGndModule(comGndBtDevice, "pressureTarget", false, true, true);
 
   // The value of the power level set on the com-gnd hardware pump control module
   // value is a float between 0.0 and 1.0
-  let [pumpLevel, pumpLevelTimeStamp] = useComGndModule(
+  let [pumpLevel, pumpLevelTimeStamp, readPumpLevel, setPumpLevel] = useComGndModule(
     comGndBtDevice,
-    "pumpLevel"
+    "pumpLevel",
+    false,
+    false,
+    true
   );
 
   // the state value for the manual pressure control slider UI
@@ -80,7 +87,7 @@ export default function Profiler({
   // TODO: This only runs when the sensor value changes, but we want the graph
   // to update a minimal interval anyway. May need to add a timeout event?
   useEffect(() => {
-    if (pumpLevel && pressure) {
+    if (!(pumpLevel === null || pumpLevel === -1) && pressure) {
       const now = Date.now();
       let offset = startTime;
       if (startTime === 0) {
@@ -178,7 +185,6 @@ export default function Profiler({
         gridArea="controls"
         justify="between"
       >
-        <Box></Box>
         <Text size="small">
           {isRunning && startTime > 0 ? (
             new Date(Date.now() - startTime).toLocaleTimeString("en-US", {
@@ -245,7 +251,7 @@ export default function Profiler({
           <Box direction="row" basis="1/3" flex={false} justify="end"> 
           <Button
               size="small"
-              label="Disard"
+              label="Discard"
               pad="small"
               primary={false}
               icon={

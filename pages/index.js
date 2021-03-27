@@ -3,7 +3,18 @@ import dynamic from "next/dynamic";
 import Head from "next/head";
 import styles from "../styles/Home.module.css";
 import gndCtrlTheme from "../styles/gnd-ctrl-standard-theme.js";
-import { Grommet, Main, Grid, Box, Button, grommet } from "grommet";
+import {
+  Grommet,
+  Main,
+  Grid,
+  Box,
+  Button,
+  grommet,
+  Layer,
+  Text,
+  Anchor,
+  Heading,
+} from "grommet";
 import { deepMerge } from "grommet/utils";
 import BluetoothConnectButton from "../components/bluetooth-connect-button";
 import useComGndBtIsConnected from "../hooks/use-com-gnd-bt-is-connected";
@@ -37,6 +48,8 @@ export default function Home() {
   ] = useState();
 
   const isBtConnected = useComGndBtIsConnected(comGndBtDevice);
+
+  const [errorMessage, setErrorMessage] = useState();
 
   // const [btConnected, setBtConnected] = useState(false);
 
@@ -86,49 +99,79 @@ export default function Home() {
       <Head>
         <title>GND CTRL</title>
         <link rel="icon" href="/favicon.ico" />
-        <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover"></meta>
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover"
+        ></meta>
       </Head>
 
       <Grid
         fill
-        pad={{horizontal: "small"}}
+        pad={{ horizontal: "small" }}
         rows={["auto", "flex", "auto", "auto"]}
         columns={["full"]}
-        areas={[
-          ['header'],
-          ['main'],
-          ['controls'],
-          ['footer']
-        ]}
+        areas={[["header"], ["main"], ["controls"], ["footer"]]}
       >
         <Header>
-        <BluetoothConnectButton
-              label="Connect"
-              onConnect={async (device, server) => {
-                try {
-                  setComGndBtDevice(device);
-                  const service = await server.getPrimaryService(
-                    comGndConfig.bluetooth.serviceId
-                    // "8fc1ceca-b162-4401-9607-c8ac21383e4e"
-                  );
-                  setComGndBtService(service);
-                  device.addEventListener(
-                    "gattserverdisconnected",
-                    handleBtDisconnect
-                  );
-                } catch (error) {
-                  console.error("Bluetooth error:", error);
-                }
-                requestWakeLock(10);
-              }}
-            />
-          </Header>
-
+          <BluetoothConnectButton
+            label="Connect"
+            onConnect={async (device, server) => {
+              try {
+                setComGndBtDevice(device);
+                const service = await server.getPrimaryService(
+                  comGndConfig.bluetooth.serviceId
+                );
+                setComGndBtService(service);
+                device.addEventListener(
+                  "gattserverdisconnected",
+                  handleBtDisconnect
+                );
+              } catch (error) {
+                console.error("Bluetooth error:", error);
+              }
+              requestWakeLock(10);
+            }}
+            onError={(error) => {
+              if (error.name === "NotFoundError") {
+                setErrorMessage(
+                  <Box>
+                    <Heading level={3} size="small" margin={{bottom: "small", top: "none"}}>
+                      This browser does not support Bluetooth (
+                      {error.message})
+                    </Heading>
+                    <Text size="small">
+                      Please check{" "}
+                      <Anchor
+                        href="https://caniuse.com/web-bluetooth"
+                        target="_blank"
+                        rel="noopener noreferrer nofollow"
+                      >
+                        caniuse.com/web-bluetooth
+                      </Anchor>{" "}
+                      to find a supported browser.
+                    </Text>
+                  </Box>
+                );
+              }
+            }}
+          />
+        </Header>
+        {errorMessage && (
+          <Layer modal={false} background="transparent" responsive={false}>
+            <Box
+              border={false}
+              pad="medium"
+              background={{ opacity: 0.8, color: "dark-1" }}
+            >
+              <Text>{errorMessage}</Text>
+            </Box>
+          </Layer>
+        )}
         <Box fill={true} border={false} gridArea="main" overflow="hidden">
           <Profiler comGndBtDevice={comGndBtDevice} />
         </Box>
         <Box gridArea="controls" direction="row" fill="horizontal" gap="small">
-            {/* <ProfileRunner
+          {/* <ProfileRunner
             profile={profile}
             onChange={(state) => {
               setProfileData((profileData) => {
@@ -162,7 +205,7 @@ export default function Home() {
               setProfileData(() => [{ bars: 0, t: 0 }]);
             }}
           /> */}
-            {/* <Button
+          {/* <Button
               disabled={comGndBtService == undefined}
               onClick={() => {
                 updateSensorData(() => [{ bars: 0, t: 0 }]);
@@ -172,12 +215,8 @@ export default function Home() {
             >
               {isRunning ? "Restart" : "Monitor"}
             </Button> */}
-
-          
-          </Box>
-        <Box gridArea="footer" border={false}>
-
         </Box>
+        <Box gridArea="footer" border={false}></Box>
       </Grid>
     </Grommet>
   );

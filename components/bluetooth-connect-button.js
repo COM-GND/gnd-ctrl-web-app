@@ -1,5 +1,5 @@
 import react, { useState } from "react";
-import { Button } from "grommet";
+import { Button, Layer, Box } from "grommet";
 import comGndConfig from "../device-configs/com-gnd-default-config";
 import BluetoothIcon from "../svgs/bluetooth-24px.svg";
 import BluetoothConnectedIcon from "../svgs/bluetooth_connected-24px.svg";
@@ -12,8 +12,6 @@ export default function BluetoothConnectButton({
   const [isConnected, setIsConnected] = useState(false);
   const [btDevice, setBtDevice] = useState();
   const [btServer, setBtServer] = useState();
-
-  const getIcon = (connected) => {};
 
   const bleCharIds = Object.keys(comGndConfig.bluetooth.characteristics).map(
     (charName) => comGndConfig.bluetooth.characteristics[charName].id
