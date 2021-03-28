@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import { Box, Button, Grid, Text, Layer } from "grommet";
 import useComGndBtIsConnected from "../hooks/use-com-gnd-bt-is-connected";
 import ProfileRunner from "./profile-runner.js";
+import timeAndPressure from "../profiles/profile.js";
 import bloomingEspresso from "../profiles/blooming-espresso";
 import useComGndModule from "../hooks/use-com-gnd-bt-module";
 import NodeAddIcon from "../svgs/note_add-24px.svg";
@@ -12,6 +13,7 @@ import Slider, { Range } from "rc-slider";
 import "rc-slider/assets/index.css";
 
 const Chart = dynamic(() => import("../components/chart"), { ssr: false });
+const timeAndPressureProfile = new timeAndPressure(bloomingEspresso);
 
 export default function Profiler({
   comGndBtDevice,
@@ -21,14 +23,17 @@ export default function Profiler({
   onStop = () => {},
   onEnd = () => {},
 }) {
+  console.log('Profiler');
   const [startTime, setStartTime] = useState(0);
   const startTimeRef = useRef(startTime);
   const lastPressureReadTimeRef = useRef();
 
-  const [profile, setProfile] = useState(new bloomingEspresso());
+  const [profile, setProfile] = useState(timeAndPressureProfile);
+  const profileRef = useRef(profile);
+
   const [profileTotalMs, setProfileTotalMs] = useState(profile.getTotalMs());
-  const [profileRecipe, setProfileRecipe] = useState(
-    profile.getDefaultRecipe()
+  const [recipeChartData, setRecipeChartData] = useState(
+    profile.getRecipeTimeSeriesData()
   );
   const [playState, setPlayState] = useState("stop");
   const [isRunning, setIsRunning] = useState(false);
@@ -81,9 +86,24 @@ export default function Profiler({
   // with new bluetooth value is the user is actively using the slider.
   const [pressureSliderIsActive, setPressureSliderIsActive] = useState(false);
 
-  //console.log('pumpLevel init', pumpLevel);
+  // profile.onRecipeChange((recipe, recipeTimeSeriesData) => {
+  //   // setRecipeChartData(recipe);
+  //   console.log('recipe change', recipeTimeSeriesData);
+  //   setRecipeChartData(recipeTimeSeriesData);
+  // });
 
-  const profileData = profile.getProfile();
+
+  //console.log('pumpLevel init', pumpLevel);
+  const handleRecipeParamsChange = (newRecipeParams) => {
+    console.log('handleRecipeParamsChange', newRecipeParams);
+    profileRef.current.setParameters(newRecipeParams);
+    const newChartData = profileRef.current.getRecipeTimeSeriesData();
+    setRecipeChartData(newChartData);
+  }
+
+ 
+  // const profileData = profile.getRecipeTimeSeriesData();
+
   // Update the Sensor Data History array when a sensor value changes
   // TODO: This only runs when the sensor value changes, but we want the graph
   // to update a minimal interval anyway. May need to add a timeout event?
@@ -138,12 +158,12 @@ export default function Profiler({
         className="profiler__main"
         style={{width: 'auto' /* <- prevents a safari bug that causes width to grow forever */}}
       >
-        <RecipeEditor profile={profile}/>
+        <RecipeEditor profile={bloomingEspresso} onChange={handleRecipeParamsChange}/>
         <Chart
           sensorDataHistory={sensorDataHistory}
           profileDataHistory={profileDataHistory}
           timeDomain={profileTotalMs}
-          recipeData={profileData}
+          recipeData={recipeChartData}
           pressureTarget={pressureTarget}
         />
         <Box width="28px" pad={{ bottom: "32px", top: "8px"}} direction="row" justify="center">

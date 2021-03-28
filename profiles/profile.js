@@ -26,7 +26,12 @@ export default class profile {
    * Constructor
    * @param {Recipe} recipe
    */
-  constructor(recipe) {}
+  constructor(config) {
+    console.log('new profile', config.name);
+    this.onRecipeChangeCallback = () => {};
+
+    this.setParameters(config.stages);
+  }
 
   /**
    * Set the recipe for the profile
@@ -34,6 +39,15 @@ export default class profile {
    */
   setRecipe(recipe) {
     this.recipe = recipe;
+    this.onRecipeChangeCallback(this.recipe, this.getRecipeTimeSeriesData() );
+  }
+
+  getRecipe() {
+    return this.recipe;
+  }
+
+  onRecipeChange(callback) {
+    this.onRecipeChangeCallback = callback;
   }
 
   getDefaultRecipe() {
@@ -50,9 +64,33 @@ export default class profile {
     return recipe;
   }
 
-  getProfile() {
+  setParameters(newParams) {
+    this.parameters = newParams;
+    const recipe = this.parameters.slice().map((stage) => {
+      const recipeStage = {
+        time: { value: stage.time?.value || stage.time.defaultValue },
+      };
+      if (stage?.pressure) {
+        recipeStage.pressure = {};
+        recipeStage.pressure.value = stage.pressure?.value || stage.pressure.defaultValue;
+      }
+      return recipeStage;
+    });
+    this.setRecipe(recipe);
+    return this.recipe;
+  }
+
+  /**
+   * Convert the Recipe into something the chart can graph
+   * @returns array - an array of time-series data of the current recipe
+   */
+  getRecipeTimeSeriesData() {
     let timeAcc = 0;
     let currPressure = 0;
+    console.log('getRecipeTimeSeriesData', this.recipe);
+    // if(!this.recipe.stages) {
+    //   return [];
+    // }
     const profile = this.recipe.map((stage) => {
       const t = timeAcc;
       timeAcc += stage.time.value;
@@ -64,7 +102,7 @@ export default class profile {
   }
 
   getSmoothProfile() {
-    const series = this.getProfile();
+    const series = this.getRecipeTimeSeriesData();
 
     const tSmoothed = quantize(
       interpolateMonotoneX(series.map((item) => item.t)),
@@ -86,8 +124,11 @@ export default class profile {
    * Get the profiles total length, in miliseconds
    */
   getTotalMs() {
-    const profile = this.getProfile();
-    const totalTime = profile[profile.length - 1].t;
+    const data = this.getRecipeTimeSeriesData();
+    if(data.length < 1) {
+      return 0;
+    }
+    const totalTime = data[data.length - 1].t;
     return totalTime;
   }
 
@@ -97,7 +138,7 @@ export default class profile {
    * @param {int} t - time in seconds
    */
   getStateAtTime(t) {
-    const profile = this.getProfile();
+    const profile = this.getRecipeTimeSeriesData();
 
     const totalTime = this.getTotalMs();
     if (t > totalTime) {
