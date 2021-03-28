@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { Box, Button, Text, Heading, RangeInput } from "grommet";
-export default function RecipeEditor({ profile, onChange }) {
-  console.log("RecipeEditor", profile);
-  const profileStages = profile.stages.slice();
+export default function RecipeEditor({ profileConfig, onChange }) {
+  console.log("RecipeEditor", profileConfig);
+  const profileStages = profileConfig.stages.slice();
   const [recipeParams, setRecipeParams] = useState(profileStages);
 
   const setStageParamValue = (stageNum, paramKey, value) => {
@@ -64,7 +64,7 @@ export default function RecipeEditor({ profile, onChange }) {
                   pad={{ vertical: "small" }}
                   flex={false}
                 >
-                  <Text size="small">{val.name}</Text>
+                  <Text size="small">{val.name}: {getStageParamValue(i, key)} {val.unit}</Text>
                   {val.control === "slider" && (
                     <Box
                       direction="row"
@@ -73,7 +73,7 @@ export default function RecipeEditor({ profile, onChange }) {
                       gap="xxsmall"
                     >
                       <Box flex={false} justify="end">
-                        {val.min}
+                        <Text size="xsmall">{val.min}</Text>
                       </Box>
                       <Box pad="small" justify="center">
                         <RangeInput
@@ -87,7 +87,7 @@ export default function RecipeEditor({ profile, onChange }) {
                           }}
                         />
                       </Box>
-                      <Box flex={false}>{val.max}</Box>
+                      <Box flex={false}> <Text size="xsmall">{val.max}</Text></Box>
                     </Box>
                   )}
                 </Box>

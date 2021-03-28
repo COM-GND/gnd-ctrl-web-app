@@ -5,7 +5,7 @@ const bloomingEspresso = {
     {
       name: "Pre Infusion",
       time: {
-        name: "Pre-infusion Time",
+        name: "Time",
         id: "pre-infusion-time",
         type: "time",
         min: 0,
@@ -15,7 +15,7 @@ const bloomingEspresso = {
         control: "slider",
       },
       pressure: {
-        name: "Pre-infusion Pressure",
+        name: "Pressure",
         id: "pre-infusion-pressure",
         type: "pressure",
         min: 0,
@@ -28,15 +28,15 @@ const bloomingEspresso = {
     {
       name: "Bloom",
       time: {
-        name: "Bloom Time",
+        name: "Time",
         defaultValue: 5,
         min: 0,
-        max: 5,
+        max: 30,
         unit: "seconds",
         control: "slider",
       },
       pressure: {
-        name: "Bloom Pressure",
+        name: "Pressure",
         id: "bloom-pressure",
         type: "pressure",
         min: 0,
@@ -49,7 +49,7 @@ const bloomingEspresso = {
     {
       name: "Ramp",
       time: {
-        name: "Pressure Ramp-up Time",
+        name: "Ramp-up Time",
         id: "pressure-ramp-up-time",
         type: "time",
         min: 0,
@@ -59,7 +59,7 @@ const bloomingEspresso = {
         control: "slider",
       },
       pressure: {
-        name: "Ramp-up Pressure",
+        name: "Pressure",
         id: "ramp-up-pressure",
         type: "pressure",
         min: 0,
@@ -72,7 +72,7 @@ const bloomingEspresso = {
     {
       name: "Infusion",
       time: {
-        name: "Infusion Time",
+        name: "Time",
         id: "infusion-time",
         type: "time",
         min: 0,
@@ -82,7 +82,7 @@ const bloomingEspresso = {
         control: "slider",
       },
       pressure: {
-        name: "Infusion Pressure",
+        name: "Pressure",
         id: "infusion-pressure",
         type: "pressure",
         min: 0,

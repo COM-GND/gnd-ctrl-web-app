@@ -4,7 +4,7 @@ import { Box, Button, Grid, Text, Layer } from "grommet";
 import useComGndBtIsConnected from "../hooks/use-com-gnd-bt-is-connected";
 import ProfileRunner from "./profile-runner.js";
 import timeAndPressure from "../profiles/profile.js";
-import bloomingEspresso from "../profiles/blooming-espresso";
+import bloomingEspressoConfig from "../profiles/blooming-espresso-config";
 import useComGndModule from "../hooks/use-com-gnd-bt-module";
 import NodeAddIcon from "../svgs/note_add-24px.svg";
 import DeleteIcon from "../svgs/delete-24px.svg";
@@ -13,7 +13,7 @@ import Slider, { Range } from "rc-slider";
 import "rc-slider/assets/index.css";
 
 const Chart = dynamic(() => import("../components/chart"), { ssr: false });
-const timeAndPressureProfile = new timeAndPressure(bloomingEspresso);
+const timeAndPressureProfile = new timeAndPressure(bloomingEspressoConfig);
 
 export default function Profiler({
   comGndBtDevice,
@@ -94,11 +94,12 @@ export default function Profiler({
 
 
   //console.log('pumpLevel init', pumpLevel);
-  const handleRecipeParamsChange = (newRecipeParams) => {
-    console.log('handleRecipeParamsChange', newRecipeParams);
+  const handleRecipeEditorChange = (newRecipeParams) => {
+    console.log('handleRecipeEditorChange', newRecipeParams);
     profileRef.current.setParameters(newRecipeParams);
     const newChartData = profileRef.current.getRecipeTimeSeriesData();
     setRecipeChartData(newChartData);
+    setProfileTotalMs(profileRef.current.getTotalMs());
   }
 
  
@@ -158,7 +159,7 @@ export default function Profiler({
         className="profiler__main"
         style={{width: 'auto' /* <- prevents a safari bug that causes width to grow forever */}}
       >
-        <RecipeEditor profile={bloomingEspresso} onChange={handleRecipeParamsChange}/>
+        <RecipeEditor profileConfig={bloomingEspressoConfig} onChange={handleRecipeEditorChange}/>
         <Chart
           sensorDataHistory={sensorDataHistory}
           profileDataHistory={profileDataHistory}
