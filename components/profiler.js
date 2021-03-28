@@ -7,6 +7,7 @@ import bloomingEspresso from "../profiles/blooming-espresso";
 import useComGndModule from "../hooks/use-com-gnd-bt-module";
 import NodeAddIcon from "../svgs/note_add-24px.svg";
 import DeleteIcon from "../svgs/delete-24px.svg";
+import RecipeEditor from "./recipe-editor";
 import Slider, { Range } from "rc-slider";
 import "rc-slider/assets/index.css";
 
@@ -58,14 +59,14 @@ export default function Profiler({
     pressureTargetTimeStamp,
     readPressureTarget,
     setPressureTarget,
-  ] = useComGndModule(comGndBtDevice, "pressureTarget", false, true, true);
+  ] = useComGndModule(comGndBtDevice, "pressureTarget", true, true, true);
 
   // The value of the power level set on the com-gnd hardware pump control module
   // value is a float between 0.0 and 1.0
   let [pumpLevel, pumpLevelTimeStamp, readPumpLevel, setPumpLevel] = useComGndModule(
     comGndBtDevice,
     "pumpLevel",
-    false,
+    true,
     false,
     true
   );
@@ -137,6 +138,7 @@ export default function Profiler({
         className="profiler__main"
         style={{width: 'auto' /* <- prevents a safari bug that causes width to grow forever */}}
       >
+        <RecipeEditor profile={profile}/>
         <Chart
           sensorDataHistory={sensorDataHistory}
           profileDataHistory={profileDataHistory}

@@ -4,9 +4,8 @@ const theme = {
       "accent-1": "whitesmoke",
       "control": "white", // changes the button border color
       "brand": "whitesmoke",
-      
     },
-    
+    spacing: "20px", // effects the size of the slider thumb
     font: {
       size: '14px',
     },
@@ -129,8 +128,8 @@ const theme = {
       "4": {
         "font": {},
         "small": {
-          "size": "18px",
-          "height": "24px",
+          "size": "16px",
+          "height": "1.25em",
           "maxWidth": "432px"
         },
         "medium": {
@@ -195,6 +194,20 @@ const theme = {
           "maxWidth": "336px"
         }
       }
+    }
+  },
+  rangeInput: {
+    track: {
+      extend: {
+        "border-radius": '4px'
+      },
+      lower: {
+
+      },
+      upper: {
+        opacity: .5
+      }
+    
     }
   }
 }

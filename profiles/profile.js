@@ -2,18 +2,18 @@ import { interpolateBasis, quantize } from "d3-interpolate";
 import { interpolateMonotoneX } from "d3-interpolate-curve";
 
 /**
- * @typedef {object} StageParamater
- * @property {string} name - name of paramater
- * @property {string} id - unique id of paramater
- * @property {string} type - the type of paramater (eg. time, pressure, temperature, etc)
- * @property {number} value - the value of the paramater
+ * @typedef {object} StageParameter
+ * @property {string} name - name of parameter
+ * @property {string} id - unique id of parameter
+ * @property {string} type - the type of parameter (eg. time, pressure, temperature, etc)
+ * @property {number} value - the value of the parameter
  */
 /**
  * A number, or a string containing a number.
  * @typedef {object} Stage
  * @property {string} name - name of stage
- * @property {StageParamater} time - the time paramater of the stage
- * @property {StageParamater} [key: string] - a variable set profile paramaters for the stage
+ * @property {StageParameter} time - the time parameter of the stage
+ * @property {StageParameter} [key: string] - a variable set profile parameters for the stage
  */
 
 /**
@@ -37,7 +37,7 @@ export default class profile {
   }
 
   getDefaultRecipe() {
-    const recipe = this.paramaters.slice().map((stage) => {
+    const recipe = this.parameters.slice().map((stage) => {
       const recipeStage = {
         time: { value: stage.time.defaultValue },
       };

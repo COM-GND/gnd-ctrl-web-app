@@ -7,7 +7,7 @@ import { useThrottle, useThrottleCallback } from "@react-hook/throttle";
 export default function useComGndModule(
   btDevice,
   sensorName,
-  read = false,
+  read = true,
   write = false,
   notify = true
 ) {
@@ -97,6 +97,10 @@ export default function useComGndModule(
   useEffect(async () => {
 
     function getFloatValue(buffer) {
+      if(buffer.byteLength !== 4) {
+        console.error(sensorName, 'recevieved malformed value ', buffer);
+        return null;
+      }
       let value = null;
       value = new Float32Array(buffer)[0];
       if (Number.isNaN(value) || value === null) {
@@ -180,13 +184,17 @@ export default function useComGndModule(
 
             // setBtCharacteristic(characteristic);
           }
-        } else if (read && comGndBtService && btCharacteristic) {
+        }
+        console.log(sensorName, 'before', read, comGndBtService, btCharacteristic)
+        if (read && comGndBtService && btCharacteristic) {
           // read value
-          const valueBuffer = await btCharacteristic.readValue();
-          const value = getFloatValue(valueBuffer);
+          const valueView = await btCharacteristic.readValue();
+          console.log(sensorName, 'Ble Read Value', value, valueView);
+          const value = getFloatValue(valueView.buffer);
           const timeStamp = Date.now();
           setSensorValue(value);
           setTimeStamp(timeStamp);
+          
         }
       } catch (error) {
         console.error("Bluetooth Error", error);

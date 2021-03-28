@@ -3,12 +3,12 @@ import profile from './profile';
 export default class bloomingEspresso extends profile {
   constructor(recipe) {
     super(recipe);
-    this.paramaters = paramaters;
+    this.parameters = parameters;
     this.recipe = recipe ? recipe : this.getDefaultRecipe();
   }
 }
 
-const paramaters = [
+const parameters = [
   {
     name: "Pre Infusion",
     time: {
@@ -35,7 +35,12 @@ const paramaters = [
   {
     name: "Bloom",
     time: {
+      name: "Bloom Time",
       defaultValue: 5,
+      min: 0,
+      max: 5,
+      unit: 'seconds',
+      control: 'slider'
     },
   },
   {
