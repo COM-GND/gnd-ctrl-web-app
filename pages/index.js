@@ -107,7 +107,6 @@ export default function Home() {
 
       <Grid
         fill
-        pad={{ horizontal: "small" }}
         rows={["auto", "flex", "auto", "auto"]}
         columns={["full"]}
         areas={[["header"], ["main"], ["controls"], ["footer"]]}

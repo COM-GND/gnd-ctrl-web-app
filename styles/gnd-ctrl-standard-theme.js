@@ -4,6 +4,7 @@ const theme = {
       "accent-1": "whitesmoke",
       "control": "white", // changes the button border color
       "brand": "whitesmoke",
+      "dark-1": "hsl(0,0%,6%)"
     },
     spacing: "20px", // effects the size of the slider thumb
     font: {
@@ -11,10 +12,7 @@ const theme = {
     },
     focus: {
       outline: {
-        color: {
-          dark: "grey ",
-          light: "whitesmoke"
-        }
+        color: "transparent"
       }
     },
     edgeSize: {

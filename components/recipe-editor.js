@@ -36,11 +36,10 @@ export default function RecipeEditor({ profileConfig, onChange }) {
   return (
     <Box
       className="recipe-editor"
-      pad="small"
-      overflow={{ vertical: "auto" }}
+      pad="medium"
       flex={false}
     >
-      <Heading level={3} size="small">
+      <Heading level={3} size="small" margin={{top: "0"}}>
         Recipe Editor
       </Heading>
       {recipeParams.map((stage, i) => (
@@ -75,10 +74,11 @@ export default function RecipeEditor({ profileConfig, onChange }) {
                       <Box flex={false} justify="end">
                         <Text size="xsmall">{val.min}</Text>
                       </Box>
-                      <Box pad="small" justify="center">
+                      <Box pad="small" justify="center" flex="grow">
                         <RangeInput
                           min={val.min}
                           max={val.max}
+                          style={{margin: "0"}}
                           step={.1}
                           value={getStageParamValue(i, key)}
                           onChange={(e) => {

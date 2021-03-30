@@ -144,6 +144,7 @@ export default function Chart({
       ref={ref}
       className="chart__scroll"
       onWheel={() => (userScrolledRef.current = true)}
+      onTouchMove={() => (userScrolledRef.current = true)}
       style={{
         width: "100%",
         height: "100%",
@@ -222,7 +223,7 @@ export default function Chart({
           dataKey="bars"
           data={profileDataHistory}
         />
-         <ReferenceLine
+        <ReferenceLine
           y={pressureTarget}
           stroke="hsla(0, 0%, 100%, .9"
           strokeDasharray="1 4"

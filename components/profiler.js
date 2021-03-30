@@ -1,6 +1,6 @@
 import dynamic from "next/dynamic";
 import { useState, useEffect, useRef } from "react";
-import { Box, Button, Grid, Text, Layer } from "grommet";
+import { Box, Button, Grid, Text, Layer, Anchor, Collapsible } from "grommet";
 import useComGndBtIsConnected from "../hooks/use-com-gnd-bt-is-connected";
 import ProfileRunner from "./profile-runner.js";
 import timeAndPressure from "../profiles/profile.js";
@@ -23,7 +23,7 @@ export default function Profiler({
   onStop = () => {},
   onEnd = () => {},
 }) {
-  console.log('Profiler');
+  console.log("Profiler");
   const [startTime, setStartTime] = useState(0);
   const startTimeRef = useRef(startTime);
   const lastPressureReadTimeRef = useRef();
@@ -35,26 +35,25 @@ export default function Profiler({
   const [recipeChartData, setRecipeChartData] = useState(
     profile.getRecipeTimeSeriesData()
   );
-  const [playState, setPlayState] = useState("stop");
   const [isRunning, setIsRunning] = useState(false);
   const [profileDataHistory, updateProfileDataHistory] = useState([]);
   const [sensorDataHistory, updateSensorDataHistory] = useState([
     { bars: 0, t: 0 },
   ]);
 
+  const [editorIsOpen, setEditorIsOpen] = useState(false);
   const isConnected = useComGndBtIsConnected(comGndBtDevice);
 
   const [showSaveHistory, setShowSaveHistory] = useState(false);
 
   // pressure is the pressure sensor reading in bars from the com-gnd pressure sensor module hardware
   // value is a float between 0.0 and 10.0 (bars)
-  let [pressure, pressureTimeStamp, readPressure, setPressure] = useComGndModule(
-    comGndBtDevice,
-    "pressureSensor",
-    true,
-    false, 
-    true
-  );
+  let [
+    pressure,
+    pressureTimeStamp,
+    readPressure,
+    setPressure,
+  ] = useComGndModule(comGndBtDevice, "pressureSensor", true, false, true);
 
   // pressureTarget is the target pressure according to the com-gnd hardware
   // this value can be controlled by this app or external hardware (ie, the rotary encoder module)
@@ -68,13 +67,12 @@ export default function Profiler({
 
   // The value of the power level set on the com-gnd hardware pump control module
   // value is a float between 0.0 and 1.0
-  let [pumpLevel, pumpLevelTimeStamp, readPumpLevel, setPumpLevel] = useComGndModule(
-    comGndBtDevice,
-    "pumpLevel",
-    true,
-    false,
-    true
-  );
+  let [
+    pumpLevel,
+    pumpLevelTimeStamp,
+    readPumpLevel,
+    setPumpLevel,
+  ] = useComGndModule(comGndBtDevice, "pumpLevel", true, false, true);
 
   // the state value for the manual pressure control slider UI
   // value is an integer between 0 and 1000. It needs to scaled to 0 to 10 to set the pressureTarget
@@ -92,17 +90,15 @@ export default function Profiler({
   //   setRecipeChartData(recipeTimeSeriesData);
   // });
 
-
   //console.log('pumpLevel init', pumpLevel);
   const handleRecipeEditorChange = (newRecipeParams) => {
-    console.log('handleRecipeEditorChange', newRecipeParams);
+    console.log("handleRecipeEditorChange", newRecipeParams);
     profileRef.current.setParameters(newRecipeParams);
     const newChartData = profileRef.current.getRecipeTimeSeriesData();
     setRecipeChartData(newChartData);
     setProfileTotalMs(profileRef.current.getTotalMs());
-  }
+  };
 
- 
   // const profileData = profile.getRecipeTimeSeriesData();
 
   // Update the Sensor Data History array when a sensor value changes
@@ -146,20 +142,39 @@ export default function Profiler({
       direction="column"
       fill={true}
       border={false}
-      areas={[["main"], ["controls"]]}
+      areas={[
+        ["sidebar", "main"],
+        ["sidebar", "controls"],
+      ]}
       rows={["flex", "auto"]}
       columns={["auto"]}
       className="profiler"
     >
+      
+        <Box         
+          overflow={{ vertical: "auto" }}
+          background={{ dark: "dark-1", light: "light-1" }}
+          gridArea="sidebar"
+        >
+          <Collapsible direction="horizontal" open={editorIsOpen}  gridArea="sidebar">
+          <RecipeEditor
+            profileConfig={bloomingEspressoConfig}
+            onChange={handleRecipeEditorChange}
+          />
+          </Collapsible>
+        </Box>
+      
       <Box
         fill="horizontal"
         pad={{ vertical: "none", horizontal: "none" }}
         gridArea="main"
         direction="row"
         className="profiler__main"
-        style={{width: 'auto' /* <- prevents a safari bug that causes width to grow forever */}}
+        style={{
+          width:
+            "auto" /* <- prevents a safari bug that causes width to grow forever */,
+        }}
       >
-        <RecipeEditor profileConfig={bloomingEspressoConfig} onChange={handleRecipeEditorChange}/>
         <Chart
           sensorDataHistory={sensorDataHistory}
           profileDataHistory={profileDataHistory}
@@ -167,7 +182,12 @@ export default function Profiler({
           recipeData={recipeChartData}
           pressureTarget={pressureTarget}
         />
-        <Box width="28px" pad={{ bottom: "32px", top: "8px"}} direction="row" justify="center">
+        <Box
+          width="28px"
+          pad={{ bottom: "32px", top: "8px" }}
+          direction="row"
+          justify="center"
+        >
           <Slider
             disabled={!isConnected && !isRunning}
             vertical={true}
@@ -208,6 +228,9 @@ export default function Profiler({
         gridArea="controls"
         justify="between"
       >
+        <Anchor onClick={() => setEditorIsOpen(!editorIsOpen)}>
+          Blooming Espresso
+        </Anchor>
         <Text size="small">
           {isRunning && startTime > 0 ? (
             new Date(Date.now() - startTime).toLocaleTimeString("en-US", {
@@ -254,53 +277,65 @@ export default function Profiler({
           }}
         />
       </Box>
-      {showSaveHistory &&
-      <Layer full="horizontal" modal={false} position="bottom" responsive={false}  style={{minHeight: '24px'}}>
-        <Box
-          direction="row"
-          gap="small"
-          fill={true}
-          alignContent="center"
-          align="center"
-          alignSelf="end"
-          justify="between"
-          pad={{vertical: "xsmall", horizontal:"small"}}
-          border={true}
-         
+      {showSaveHistory && (
+        <Layer
+          full="horizontal"
+          modal={false}
+          position="bottom"
+          responsive={false}
+          style={{ minHeight: "24px" }}
         >
-          <Box pad={{ horizontal: "medium" }} basis="2/3" flex={false} align="start">
-            <Text size="small">Profile complete. Archive data in recipe history? </Text>
+          <Box
+            direction="row"
+            gap="small"
+            fill={true}
+            alignContent="center"
+            align="center"
+            alignSelf="end"
+            justify="between"
+            pad={{ vertical: "xsmall", horizontal: "small" }}
+            border={true}
+          >
+            <Box
+              pad={{ horizontal: "medium" }}
+              basis="2/3"
+              flex={false}
+              align="start"
+            >
+              <Text size="small">
+                Profile complete. Archive data in recipe history?{" "}
+              </Text>
+            </Box>
+            <Box direction="row" basis="1/3" flex={false} justify="end">
+              <Button
+                size="small"
+                label="Discard"
+                pad="small"
+                primary={false}
+                icon={
+                  <DeleteIcon
+                    viewBox="0 0 24 24"
+                    style={{ fill: "white", width: "20px", height: "20px" }}
+                  />
+                }
+                onClick={() => setShowSaveHistory(false)}
+              />
+              <Button
+                size="small"
+                pad="small"
+                primary={false}
+                label="Archive"
+                icon={
+                  <NodeAddIcon
+                    viewBox="0 0 24 24"
+                    style={{ fill: "white", width: "20px", height: "20px" }}
+                  />
+                }
+              />
+            </Box>
           </Box>
-          <Box direction="row" basis="1/3" flex={false} justify="end"> 
-          <Button
-              size="small"
-              label="Discard"
-              pad="small"
-              primary={false}
-              icon={
-                <DeleteIcon
-                  viewBox="0 0 24 24"
-                  style={{ fill: "white", width: "20px", height: "20px" }}
-                />
-              }
-              onClick={() => setShowSaveHistory(false)}
-            />
-            <Button
-              size="small"
-              pad="small"
-              primary={false}
-              label="Archive"
-              icon={
-                <NodeAddIcon
-                  viewBox="0 0 24 24"
-                  style={{ fill: "white", width: "20px", height: "20px" }}
-                />
-              }
-            />
-           
-          </Box>
-        </Box>
-      </Layer>}
+        </Layer>
+      )}
     </Grid>
   );
 }
