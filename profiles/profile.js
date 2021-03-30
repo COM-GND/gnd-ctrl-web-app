@@ -67,12 +67,14 @@ export default class profile {
   setParameters(newParams) {
     this.parameters = newParams;
     const recipe = this.parameters.slice().map((stage) => {
+      const timeVal = 'value' in stage.time ? stage.time.value : stage.time.defaultValue;
       const recipeStage = {
-        time: { value: stage.time?.value || stage.time.defaultValue },
+        time: { value: timeVal },
       };
       if (stage?.pressure) {
+        const pressureVal = 'value' in stage.pressure ? stage.pressure.value : stage.pressure.defaultValue;
         recipeStage.pressure = {};
-        recipeStage.pressure.value = stage.pressure?.value || stage.pressure.defaultValue;
+        recipeStage.pressure.value = pressureVal;
       }
       return recipeStage;
     });

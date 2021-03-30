@@ -14,7 +14,7 @@ export default function RecipeEditor({ profileConfig, onChange }) {
   };
 
   const getStageParamValue = (stageNum, paramKey) => {
-    return profileStages[stageNum][paramKey].value
+    return profileStages[stageNum][paramKey].value !== undefined
       ? profileStages[stageNum][paramKey].value
       : profileStages[stageNum][paramKey].defaultValue;
   };
@@ -82,7 +82,7 @@ export default function RecipeEditor({ profileConfig, onChange }) {
                           step={.1}
                           value={getStageParamValue(i, key)}
                           onChange={(e) => {
-                            console.log("editor change", i, key);
+                            console.log("editor change", i, key, e.target.value);
                             setStageParamValue(i, key, Number(e.target.value));
                           }}
                         />

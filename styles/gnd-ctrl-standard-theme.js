@@ -196,20 +196,20 @@ const theme = {
       }
     }
   },
-  rangeInput: {
-    track: {
-      extend: {
-        "border-radius": '4px'
-      },
-      lower: {
+  // rangeInput: {
+  //   track: {
+  //     extend: {
+  //       // "border-radius": '4px'
+  //     },
+  //     lower: {
 
-      },
-      upper: {
-        opacity: .5
-      }
+  //     },
+  //     upper: {
+  //       opacity: .5
+  //     }
     
-    }
-  }
+  //   }
+  // }
 }
 
 export {theme as default};
