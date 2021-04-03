@@ -1,5 +1,5 @@
-const bloomingEspresso = {
-  name: "Blooming Espresso",
+const pressureProfile = {
+  profileName: "Pressure Profile - 5 Stage",
   profile: "time-and-pressue",
   stages: [
     {
@@ -10,7 +10,7 @@ const bloomingEspresso = {
         type: "time",
         min: 0,
         max: 20,
-        defaultValue: 7,
+        defaultValue: 3,
         unit: "seconds",
         control: "slider",
       },
@@ -41,7 +41,7 @@ const bloomingEspresso = {
         type: "pressure",
         min: 0,
         max: 10,
-        defaultValue: 5,
+        defaultValue: 3,
         unit: "bars",
         control: "slider",
       },
@@ -95,4 +95,4 @@ const bloomingEspresso = {
   ],
 };
 
-export default bloomingEspresso;
+export default pressureProfile;

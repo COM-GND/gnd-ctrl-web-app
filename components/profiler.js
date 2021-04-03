@@ -15,6 +15,8 @@ import "rc-slider/assets/index.css";
 const Chart = dynamic(() => import("../components/chart"), { ssr: false });
 const timeAndPressureProfile = new timeAndPressure(bloomingEspressoConfig);
 
+const debugBt = false;
+
 export default function Profiler({
   comGndBtDevice,
   //   liveSensorData,
@@ -23,7 +25,7 @@ export default function Profiler({
   onStop = () => {},
   onEnd = () => {},
 }) {
-  console.log("Profiler");
+  const [showNonSsr, setShowNonSsr] = useState(false);
   const [startTime, setStartTime] = useState(0);
   const startTimeRef = useRef(startTime);
   const lastPressureReadTimeRef = useRef();
@@ -99,13 +101,15 @@ export default function Profiler({
     setProfileTotalMs(profileRef.current.getTotalMs());
   };
 
-  // const profileData = profile.getRecipeTimeSeriesData();
+  useEffect(() => {
+    setShowNonSsr(true);
+  }, []);
 
   // Update the Sensor Data History array when a sensor value changes
   // TODO: This only runs when the sensor value changes, but we want the graph
   // to update a minimal interval anyway. May need to add a timeout event?
   useEffect(() => {
-    if (!(pumpLevel === null || pumpLevel === -1) && pressure) {
+    if (debugBt || (!(pumpLevel === null || pumpLevel === -1) && pressure)) {
       const now = Date.now();
       let offset = startTime;
       if (startTime === 0) {
@@ -118,7 +122,7 @@ export default function Profiler({
       updateSensorDataHistory((history) => {
         const newSensorDataHistory = [
           ...history,
-          { t: t, bars: pressure },
+          { t: t, bars: pressure, pump: pumpLevel > 0 ? pumpLevel * 10 : 0 },
         ]; /*.filter((datum) => datum.t > t - profileTotalMs)*/
         return newSensorDataHistory;
       });
@@ -144,26 +148,28 @@ export default function Profiler({
       border={false}
       areas={[
         ["sidebar", "main"],
-        ["sidebar", "controls"],
+        ["controls", "controls"],
       ]}
       rows={["flex", "auto"]}
       columns={["auto"]}
       className="profiler"
     >
-      
-        <Box         
-          overflow={{ vertical: "auto" }}
-          background={{ dark: "dark-1", light: "light-1" }}
-          gridArea="sidebar"
-        >
-          <Collapsible direction="horizontal" open={editorIsOpen}  gridArea="sidebar">
-          <RecipeEditor
-            profileConfig={bloomingEspressoConfig}
-            onChange={handleRecipeEditorChange}
-          />
-          </Collapsible>
-        </Box>
-      
+      {showNonSsr && (
+        <Collapsible direction="horizontal" open={editorIsOpen}>
+          <Box
+            overflow={{ vertical: "auto" }}
+            background={{ dark: "dark-1", light: "light-1" }}
+            // gridArea="sidebar"
+          >
+            <RecipeEditor
+              profileConfig={bloomingEspressoConfig}
+              onChange={handleRecipeEditorChange}
+              recipeId="c427da9b-50cc-4d47-9a0e-3ce48f813461"
+            />
+          </Box>
+        </Collapsible>
+      )}
+
       <Box
         fill="horizontal"
         pad={{ vertical: "none", horizontal: "none" }}
@@ -257,7 +263,7 @@ export default function Profiler({
           onStart={() => {
             setStartTime(0);
             // initialize the target pressure before beginning
-            setPressureTarget(profileData[0].bars);
+            setPressureTarget(recipeChartData[0].bars);
             setIsRunning(true);
             updateSensorDataHistory(() => [{ bars: 0, t: 0 }]);
             updateProfileDataHistory(() => [{ bars: 0, t: 0 }]);

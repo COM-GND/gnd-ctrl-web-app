@@ -6,7 +6,7 @@ const theme = {
       "brand": "whitesmoke",
       "dark-1": "hsl(0,0%,6%)"
     },
-    spacing: "20px", // effects the size of the slider thumb
+    spacing: "24px", // effects the size of the slider thumb
     font: {
       size: '14px',
     },
@@ -126,7 +126,7 @@ const theme = {
       "4": {
         "font": {},
         "small": {
-          "size": "16px",
+          "size": "14px",
           "height": "1.25em",
           "maxWidth": "432px"
         },
@@ -194,20 +194,24 @@ const theme = {
       }
     }
   },
-  // rangeInput: {
-  //   track: {
-  //     extend: {
-  //       // "border-radius": '4px'
-  //     },
-  //     lower: {
+  rangeInput: {
+    thumb:{
 
-  //     },
-  //     upper: {
-  //       opacity: .5
-  //     }
+    },
+
+    track: {
+      extend: {
+        // "border-radius": '4px'
+      },
+      lower: {
+
+      },
+      upper: {
+        opacity: .5
+      }
     
-  //   }
-  // }
+    }
+  }
 }
 
 export {theme as default};
