@@ -8,6 +8,10 @@ body {
     Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
 }
 
+body {
+  /* padding: 10px env(safe-area-inset-right) 0 env(safe-area-inset-left); */
+}
+
 a {
   color: inherit;
   text-decoration: none;
@@ -19,4 +23,9 @@ a {
 
 .rc-slider-disabled {
   background-color: transparent !important;
+}
+
+.app-container {
+  /* add padding for iphone notch if needed */
+  padding: 0 env(safe-area-inset-right) 0 env(safe-area-inset-left);
 }

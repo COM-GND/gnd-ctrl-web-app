@@ -110,6 +110,7 @@ export default function Home() {
         rows={["auto", "flex", "auto", "auto"]}
         columns={["full"]}
         areas={[["header"], ["main"], ["controls"], ["footer"]]}
+        className="app-container"
       >
         <Header>
           <BluetoothConnectButton

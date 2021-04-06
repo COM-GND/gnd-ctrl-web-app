@@ -29,6 +29,22 @@ const theme = {
     },
   },
   button: {
+    default: {
+      font: {
+        weight: 400 /* doesn't seem to have any effect */
+      },
+      color: {
+        dark: "white"
+      },
+      extend: {
+        "font-weight": "500 !important"
+      },
+    },
+    secondary: {
+      font: {
+        weight: 400
+      }
+    },
     border: {
       color: "black",
       width: "0px",
@@ -38,6 +54,9 @@ const theme = {
       small: {
         border: {
           radius: "1px"
+        },
+        pad: {
+          horizontal: "xsmall"
         }
       },
       medium: {

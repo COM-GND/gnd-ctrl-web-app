@@ -30,56 +30,34 @@ export default class profile {
     console.log('new profile', config.name);
     this.onRecipeChangeCallback = () => {};
 
-    this.setParameters(config.stages);
+    this.setParameters(config);
   }
 
-  /**
-   * Set the recipe for the profile
-   * @param {Recipe} recipe
-   */
-  setRecipe(recipe) {
-    this.recipe = recipe;
-    this.onRecipeChangeCallback(this.recipe, this.getRecipeTimeSeriesData() );
-  }
-
-  getRecipe() {
-    return this.recipe;
-  }
 
   onRecipeChange(callback) {
     this.onRecipeChangeCallback = callback;
   }
 
-  getDefaultRecipe() {
-    const recipe = this.parameters.slice().map((stage) => {
-      const recipeStage = {
-        time: { value: stage.time.defaultValue },
-      };
-      if (stage?.pressure) {
-        recipeStage.pressure = {};
-        recipeStage.pressure.value = stage.pressure.defaultValue;
-      }
-      return recipeStage;
-    });
-    return recipe;
-  }
+  // getDefaultRecipe() {
+  //   const recipe = this.parameters.slice().map((stage) => {
+  //     const recipeStage = {
+  //       time: { value: stage.time.defaultValue },
+  //     };
+  //     if (stage?.pressure) {
+  //       recipeStage.pressure = {};
+  //       recipeStage.pressure.value = stage.pressure.defaultValue;
+  //     }
+  //     return recipeStage;
+  //   });
+  //   return recipe;
+  // }
 
   setParameters(newParams) {
     this.parameters = newParams;
-    const recipe = this.parameters.slice().map((stage) => {
-      const timeVal = 'value' in stage.time ? stage.time.value : stage.time.defaultValue;
-      const recipeStage = {
-        time: { value: timeVal },
-      };
-      if (stage?.pressure) {
-        const pressureVal = 'value' in stage.pressure ? stage.pressure.value : stage.pressure.defaultValue;
-        recipeStage.pressure = {};
-        recipeStage.pressure.value = pressureVal;
-      }
-      return recipeStage;
-    });
-    this.setRecipe(recipe);
-    return this.recipe;
+  }
+
+  getParameters()  {
+    return this.parameters;
   }
 
   /**
@@ -93,13 +71,20 @@ export default class profile {
     // if(!this.recipe.stages) {
     //   return [];
     // }
-    const profile = this.recipe.map((stage) => {
+    const timeSeriesData = this.parameters.stages.map((stage) => {
       const t = timeAcc;
-      timeAcc += stage.time.value;
-      currPressure = stage?.pressure ? stage.pressure.value : currPressure;
+      const value = 'value' in stage.time ? stage.time.value : stage.time.defaultValue;
+      timeAcc += value;
+      if('pressure' in stage) {
+        if('value' in stage.pressure) {
+          currPressure = stage.pressure.value;
+        } else {
+          currPressure = stage.pressure.defaultValue;
+        }
+      }
       return { t: timeAcc * 1000, bars: currPressure };
     });
-    const series = [{ t: 0, bars: 0 }, ...profile];
+    const series = [{ t: 0, bars: 0 }, ...timeSeriesData];
     return series;
   }
 
@@ -136,8 +121,8 @@ export default class profile {
 
 
   /**
-   * Get the target machine state at the give time given in seconds
-   * @param {int} t - time in seconds
+   * Get the target machine state at the given time (MS)
+   * @param {int} t - time in miliseconds
    */
   getStateAtTime(t) {
     const profile = this.getRecipeTimeSeriesData();

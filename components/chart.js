@@ -171,7 +171,7 @@ export default function Chart({
         <YAxis
           dataKey="bars"
           domain={[0, 10]}
-          interval="preserveEnd"
+          interval={0}
           // minTickGap={10}
           type="number"
           allowDataOverflow={true}
@@ -179,6 +179,7 @@ export default function Chart({
           tickCount={10}
           width={10}
           mirror={true}
+          hide={true}
         />
         <XAxis
           dataKey="t"

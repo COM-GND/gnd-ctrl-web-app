@@ -42,6 +42,7 @@ export default function RecipeEditor({ profileConfig, onChange, recipeId }) {
     const newRecipeData = Object.assign({}, recipeData);
     newRecipeData.recipeName = newName;
     setRecipeData(newRecipeData);
+    onChange(newRecipeData);
   };
 
   const setStageParamValue = (stageNum, paramKey, value) => {
@@ -52,7 +53,7 @@ export default function RecipeEditor({ profileConfig, onChange, recipeId }) {
     newRecipeData.stages = newRecipeStages;
     setRecipeData(newRecipeData);
     //const newRecipe = recipeParamsToRecipe(newRecipeStages);
-    onChange(newRecipeStages);
+    onChange(newRecipeData);
   };
 
   const getStageParamValue = (stageNum, paramKey) => {

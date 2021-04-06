@@ -90,7 +90,7 @@ export default function ProfileRunner({
   }, [pumpLevel]);
 
   return (
-    <Box direction="row" gap="xxsmall" className="profile-runner">
+    <Box direction="row" gap="xxsmall" className="profile-runner" flex={false}>
       {/* <Text>{runState ? getRunningTime() / 1000 : 0}</Text> */}
 
       {pumpLevel === -1 && runTime == 0 && runState === "play" && (
@@ -141,6 +141,7 @@ export default function ProfileRunner({
         }
       />
       <Button
+      size="small"
         disabled={runState === "stop" || disabled}
         onClick={() => {
           setRunState("stop");

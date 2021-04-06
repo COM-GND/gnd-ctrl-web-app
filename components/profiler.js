@@ -3,17 +3,18 @@ import { useState, useEffect, useRef } from "react";
 import { Box, Button, Grid, Text, Layer, Anchor, Collapsible } from "grommet";
 import useComGndBtIsConnected from "../hooks/use-com-gnd-bt-is-connected";
 import ProfileRunner from "./profile-runner.js";
-import timeAndPressure from "../profiles/profile.js";
-import bloomingEspressoConfig from "../profiles/blooming-espresso-config";
+import timeAndPressure from "../profiles/time-and-pressure-profile.js";
+import fiveStagePressureProfile from "../profiles/time-and-pressure-5-stage-config";
 import useComGndModule from "../hooks/use-com-gnd-bt-module";
 import NodeAddIcon from "../svgs/note_add-24px.svg";
 import DeleteIcon from "../svgs/delete-24px.svg";
 import RecipeEditor from "./recipe-editor";
 import Slider, { Range } from "rc-slider";
+import Tune from "../svgs/tune-24px.svg";
 import "rc-slider/assets/index.css";
 
 const Chart = dynamic(() => import("../components/chart"), { ssr: false });
-const timeAndPressureProfile = new timeAndPressure(bloomingEspressoConfig);
+const timeAndPressureProfile = new timeAndPressure(fiveStagePressureProfile);
 
 const debugBt = false;
 
@@ -93,9 +94,9 @@ export default function Profiler({
   // });
 
   //console.log('pumpLevel init', pumpLevel);
-  const handleRecipeEditorChange = (newRecipeParams) => {
-    console.log("handleRecipeEditorChange", newRecipeParams);
-    profileRef.current.setParameters(newRecipeParams);
+  const handleRecipeEditorChange = (newRecipeData) => {
+    console.log("handleRecipeEditorChange", newRecipeData);
+    profileRef.current.setParameters(newRecipeData);
     const newChartData = profileRef.current.getRecipeTimeSeriesData();
     setRecipeChartData(newChartData);
     setProfileTotalMs(profileRef.current.getTotalMs());
@@ -162,7 +163,7 @@ export default function Profiler({
             // gridArea="sidebar"
           >
             <RecipeEditor
-              profileConfig={bloomingEspressoConfig}
+              profileConfig={timeAndPressureProfile.getParameters()}
               onChange={handleRecipeEditorChange}
               recipeId="c427da9b-50cc-4d47-9a0e-3ce48f813461"
             />
@@ -177,10 +178,33 @@ export default function Profiler({
         direction="row"
         className="profiler__main"
         style={{
+          position: "relative",
           width:
             "auto" /* <- prevents a safari bug that causes width to grow forever */,
         }}
       >
+        <Box
+          justify="between"
+          style={{
+            position: "absolute",
+            top: "-2px",
+            left: "8px",
+            bottom: "20px",
+            fontSize: "12px",
+          }}
+        >
+          <Box>10</Box>
+          <Box>9</Box>
+          <Box>8</Box>
+          <Box>7</Box>
+          <Box>6</Box>
+          <Box>5</Box>
+          <Box>4</Box>
+          <Box>3</Box>
+          <Box>2</Box>
+          <Box>1</Box>
+          <Box>&nbsp;</Box>
+        </Box>
         <Chart
           sensorDataHistory={sensorDataHistory}
           profileDataHistory={profileDataHistory}
@@ -193,6 +217,13 @@ export default function Profiler({
           pad={{ bottom: "32px", top: "8px" }}
           direction="row"
           justify="center"
+          style={{
+            position: "absolute",
+            right: "10px",
+            top: "0",
+            bottom: "0",
+            zIndex: 10,
+          }}
         >
           <Slider
             disabled={!isConnected && !isRunning}
@@ -210,9 +241,9 @@ export default function Profiler({
             handleStyle={{
               border: "none",
               opacity: ".3",
-              width: "24px",
-              height: "24px",
-              marginLeft: "-10px",
+              width: "32px",
+              height: "32px",
+              marginLeft: "-16px",
             }}
             trackStyle={{
               opacity: "0",
@@ -226,7 +257,7 @@ export default function Profiler({
         </Box>
       </Box>
       <Box
-        pad={{ top: "none", bottom: "xsmall", horizontal: "medium" }}
+        pad={{ top: "none", bottom: "xsmall", left: "none", right: "xsmall" }}
         direction="row"
         align="center"
         fill="horizontal"
@@ -234,54 +265,71 @@ export default function Profiler({
         gridArea="controls"
         justify="between"
       >
-        <Anchor onClick={() => setEditorIsOpen(!editorIsOpen)}>
-          Blooming Espresso
-        </Anchor>
-        <Text size="small">
-          {isRunning && startTime > 0 ? (
-            new Date(Date.now() - startTime).toLocaleTimeString("en-US", {
-              minute: "numeric",
-              second: "numeric",
-              fractionalSecondDigits: 2,
-            })
-          ) : (
-            <span>00:00.00</span>
-          )}
-        </Text>
-        <ProfileRunner
-          profile={profile}
-          pumpLevel={pumpLevel}
-          disabled={!isConnected}
-          onChange={(state) => {
-            updateProfileDataHistory((profileDataHistory) => {
-              return [...profileDataHistory, state];
-            });
-            if (state.bars) {
-              setPressureTarget(state.bars);
+        <Box flex={false} align="start" basis="1/3">
+          <Button
+            onClick={() => setEditorIsOpen(!editorIsOpen)}
+            label={
+              profileRef.current.getParameters().recipeName || "Edit Recipe"
             }
-          }}
-          onStart={() => {
-            setStartTime(0);
-            // initialize the target pressure before beginning
-            setPressureTarget(recipeChartData[0].bars);
-            setIsRunning(true);
-            updateSensorDataHistory(() => [{ bars: 0, t: 0 }]);
-            updateProfileDataHistory(() => [{ bars: 0, t: 0 }]);
-            onStart();
-          }}
-          onPause={() => {
-            setIsRunning(false);
-            onPause();
-          }}
-          onUnPause={() => {
-            setIsRunning(true);
-          }}
-          onStop={() => {
-            setIsRunning(false);
-            setShowSaveHistory(true);
-            onStop();
-          }}
-        />
+            size="small"
+            style={{ padding: "8px" }}
+            icon={
+              <Tune
+                viewBox="0 0 24 24"
+                style={{ fill: "white", width: "20px", height: "20px" }}
+              />
+            }
+          ></Button>
+        </Box>
+        <Box flex={false} basis={"1/3"} justify="center">
+          <Text size="small" textAlign="center">
+            {isRunning && startTime > 0 ? (
+              new Date(Date.now() - startTime).toLocaleTimeString("en-US", {
+                minute: "numeric",
+                second: "numeric",
+                fractionalSecondDigits: 2,
+              })
+            ) : (
+              <span>00:00.00</span>
+            )}
+          </Text>
+        </Box>
+        <Box flex={false} basis={"1/3"} align="end" pad={{ right: "medium" }}>
+          <ProfileRunner
+            profile={profile}
+            pumpLevel={pumpLevel}
+            disabled={!isConnected}
+            onChange={(state) => {
+              updateProfileDataHistory((profileDataHistory) => {
+                return [...profileDataHistory, state];
+              });
+              if (state.bars) {
+                setPressureTarget(state.bars);
+              }
+            }}
+            onStart={() => {
+              setStartTime(0);
+              // initialize the target pressure before beginning
+              setPressureTarget(recipeChartData[0].bars);
+              setIsRunning(true);
+              updateSensorDataHistory(() => [{ bars: 0, t: 0 }]);
+              updateProfileDataHistory(() => [{ bars: 0, t: 0 }]);
+              onStart();
+            }}
+            onPause={() => {
+              setIsRunning(false);
+              onPause();
+            }}
+            onUnPause={() => {
+              setIsRunning(true);
+            }}
+            onStop={() => {
+              setIsRunning(false);
+              setShowSaveHistory(true);
+              onStop();
+            }}
+          />
+        </Box>
       </Box>
       {showSaveHistory && (
         <Layer
