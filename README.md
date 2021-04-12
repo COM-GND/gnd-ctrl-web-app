@@ -1,8 +1,8 @@
 ![COM GND Logo](https://raw.githubusercontent.com/COM-GND/com-gnd-espresso/main/docs/com-gnd_logo_left-lock.svg)
 
-# GND-CTRL 
+# [GND-CTRL](https://gnd-ctrl.vercel.app)
 
-The live GND-CTRL is currently live at [gnd-ctrl.vercel.app](https://gnd-ctrl.vercel.app).
+The GND-CTRL app is currently live at [gnd-ctrl.vercel.app](https://gnd-ctrl.vercel.app).
 
 
 GND-CTRL is an experimental web app for controlling the [COM-GND Espresso](https://github.com/COM-GND/espresso) Open Source Hardware project. It connects to the COM-GND control hardware module via Bluetooth and allows for advanced shot profiling. 
