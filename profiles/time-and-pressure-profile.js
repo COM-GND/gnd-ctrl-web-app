@@ -67,10 +67,7 @@ export default class profile {
   getRecipeTimeSeriesData() {
     let timeAcc = 0;
     let currPressure = 0;
-    console.log('getRecipeTimeSeriesData', this.recipe);
-    // if(!this.recipe.stages) {
-    //   return [];
-    // }
+    
     const timeSeriesData = this.parameters.stages.map((stage) => {
       const t = timeAcc;
       const value = 'value' in stage.time ? stage.time.value : stage.time.defaultValue;

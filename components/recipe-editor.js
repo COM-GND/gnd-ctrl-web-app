@@ -10,13 +10,15 @@ import useLocalStorage from "../hooks/use-local-storage";
 export default function RecipeEditor({ profileConfig, onChange, recipeId }) {
   console.log("RecipeEditor", profileConfig);
 
-  const localStorageKey = recipeId
-    ? `recipe:${recipeId}`
-    : `recipe:${uuidv4()}`;
+  if(!recipeId) {
+    recipeId = uuidv4();
+  }
+  const localStorageKey = `${recipeId}:recipe`;
+  
   const [recipeName, setRecipeName] = useState("");
 
   const defaultRecipeProperties = {
-    id: localStorageKey,
+    id: recipeId,
     recipeName: "Untitled recipe",
     created: new Date(),
     modified: new Date(),
@@ -32,10 +34,10 @@ export default function RecipeEditor({ profileConfig, onChange, recipeId }) {
   const profileStages = recipeData.stages.slice();
   const [recipeStages, setRecipeStages] = useState(profileStages);
 
-  const saveRecipe = (recipeData) => {
-    const newRecipeData = Object.assign({}, recipeData);
-    setRecipeData(newRecipeData);
-  };
+  useEffect(() => {
+    console.log('edit first load');
+    onChange(recipeData);
+  }, []);
 
   const handleRecipeNameChange = (e) => {
     const newName = e.target.value;

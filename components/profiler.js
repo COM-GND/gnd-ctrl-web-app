@@ -12,6 +12,7 @@ import RecipeEditor from "./recipe-editor";
 import Slider, { Range } from "rc-slider";
 import Tune from "../svgs/tune-24px.svg";
 import "rc-slider/assets/index.css";
+import useLocalStorage from "../hooks/use-local-storage";
 
 const Chart = dynamic(() => import("../components/chart"), { ssr: false });
 const timeAndPressureProfile = new timeAndPressure(fiveStagePressureProfile);
@@ -49,6 +50,17 @@ export default function Profiler({
 
   const [showSaveHistory, setShowSaveHistory] = useState(false);
 
+  const recipeId = "c427da9b-50cc-4d47-9a0e-3ce48f813461";
+
+  // see if custome recipe has been saved to local storage and load it.
+  const [storedRecipeData, setStoredRecipeData] = useLocalStorage(
+    `${recipeId}:recipe`,
+    null
+  );
+  const [storedHistoryData, setStoredHistoryData] = useLocalStorage(
+    `${recipeId}:history:${(new Date()).toISOString()}`,
+    null
+  );
   // pressure is the pressure sensor reading in bars from the com-gnd pressure sensor module hardware
   // value is a float between 0.0 and 10.0 (bars)
   let [
@@ -102,8 +114,23 @@ export default function Profiler({
     setProfileTotalMs(profileRef.current.getTotalMs());
   };
 
+  /**
+   * Prevent non-ssr components from rendering on server
+   */
   useEffect(() => {
     setShowNonSsr(true);
+  }, []);
+
+  /* 
+  if a recipe is loaded from local storage on initial render, use that data.
+  We don't update on any changes to storedRecipeData, since the editor
+  already emits onChange events and localStorage is sync. 
+  */
+  useEffect(() => {
+    console.log("loaded saved recipe", storedRecipeData);
+    if (storedRecipeData) {
+      handleRecipeEditorChange(storedRecipeData);
+    }
   }, []);
 
   // Update the Sensor Data History array when a sensor value changes
@@ -165,7 +192,7 @@ export default function Profiler({
             <RecipeEditor
               profileConfig={timeAndPressureProfile.getParameters()}
               onChange={handleRecipeEditorChange}
-              recipeId="c427da9b-50cc-4d47-9a0e-3ce48f813461"
+              recipeId={recipeId}
             />
           </Box>
         </Collapsible>
@@ -193,17 +220,39 @@ export default function Profiler({
             fontSize: "12px",
           }}
         >
-          <Box>10</Box>
-          <Box>9</Box>
-          <Box>8</Box>
-          <Box>7</Box>
-          <Box>6</Box>
-          <Box>5</Box>
-          <Box>4</Box>
-          <Box>3</Box>
-          <Box>2</Box>
-          <Box>1</Box>
-          <Box>&nbsp;</Box>
+          <Text color="dark-2" size="xsmall">
+            10
+          </Text>
+          <Text color="dark-2" size="xsmall">
+            9
+          </Text>
+          <Text color="dark-2" size="xsmall">
+            8
+          </Text>
+          <Text color="dark-2" size="xsmall">
+            7
+          </Text>
+          <Text color="dark-2" size="xsmall">
+            6
+          </Text>
+          <Text color="dark-2" size="xsmall">
+            5
+          </Text>
+          <Text color="dark-2" size="xsmall">
+            4
+          </Text>
+          <Text color="dark-2" size="xsmall">
+            3
+          </Text>
+          <Text color="dark-2" size="xsmall">
+            2
+          </Text>
+          <Text color="dark-2" size="xsmall">
+            1
+          </Text>
+          <Text color="dark-2" size="xsmall">
+            &nbsp;
+          </Text>
         </Box>
         <Chart
           sensorDataHistory={sensorDataHistory}
@@ -268,9 +317,9 @@ export default function Profiler({
         <Box flex={false} align="start" basis="1/3">
           <Button
             onClick={() => setEditorIsOpen(!editorIsOpen)}
-            label={
-              profileRef.current.getParameters().recipeName || "Edit Recipe"
-            }
+            // label={
+            //   profileRef.current.getParameters().recipeName || "Edit Recipe"
+            // }
             size="small"
             style={{ padding: "8px" }}
             icon={
@@ -385,6 +434,16 @@ export default function Profiler({
                     style={{ fill: "white", width: "20px", height: "20px" }}
                   />
                 }
+                onClick={() => {
+                  const saveData = {
+                    created: (new Date()).toISOString(),
+                    recipeId: recipeId,
+                    sensorData: sensorDataHistory,
+                    recipeData: recipeChartData,
+                  };
+                  setStoredHistoryData(saveData);
+                  setShowSaveHistory(false);
+                }}
               />
             </Box>
           </Box>

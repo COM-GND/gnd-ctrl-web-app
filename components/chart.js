@@ -24,7 +24,6 @@ export default function Chart({
   pressureTarget = 5.0,
   zoom = 1,
 }) {
-  console.log("chart recipeData", recipeData);
 
   const userScrolledRef = useRef(false);
 

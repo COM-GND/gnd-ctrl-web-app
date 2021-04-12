@@ -129,7 +129,7 @@ export default function Home() {
               } catch (error) {
                 console.error("Bluetooth error:", error);
               }
-              requestWakeLock(10);
+              requestWakeLock(1);
             }}
             onError={(error) => {
               if (error.name === "NotFoundError") {
