@@ -1,6 +1,7 @@
 const pressureProfile = {
   profileName: "Pressure Profile - 5 Stage",
   profile: "time-and-pressue",
+  profileFile: 'time-and-pressure-profile.js',
   stages: [
     {
       name: "Pre Infusion",

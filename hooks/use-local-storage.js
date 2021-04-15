@@ -11,7 +11,7 @@ export default function useLocalStorage(key, initialValue) {
       // Get from local storage by key
 
       // there's no window during ssr
-      if(typeof window === undefined) {
+      if(typeof global.window === undefined) {
         return initialValue;
       }
       const item = global.window && window.localStorage.getItem(key);

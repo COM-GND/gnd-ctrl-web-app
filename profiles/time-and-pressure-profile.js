@@ -27,7 +27,7 @@ export default class profile {
    * @param {Recipe} recipe
    */
   constructor(config) {
-    console.log('new profile', config.name);
+    console.log('new profile', config.profileName);
     this.onRecipeChangeCallback = () => {};
 
     this.setParameters(config);

@@ -19,6 +19,7 @@ import { deepMerge } from "grommet/utils";
 import BluetoothConnectButton from "../components/bluetooth-connect-button";
 import useComGndBtIsConnected from "../hooks/use-com-gnd-bt-is-connected";
 import Profiler from "../components/profiler";
+import ProfileBrowser from "../components/profile-browser";
 import Header from "../components/header";
 import requestWakeLock from "../utils/wake-lock";
 import comGndConfig from "../device-configs/com-gnd-default-config";
@@ -37,9 +38,7 @@ export default function Home() {
   };
 
   const [isRunning, setIsRunning] = useState(false);
-
   const [sensorData, updateSensorData] = useState([{ bars: 0, t: 0 }]);
-
   const [comGndBtDevice, setComGndBtDevice] = useState();
   const [comGndBtService, setComGndBtService] = useState();
   const [
@@ -48,56 +47,20 @@ export default function Home() {
   ] = useState();
 
   const isBtConnected = useComGndBtIsConnected(comGndBtDevice);
-
   const [errorMessage, setErrorMessage] = useState();
 
-  // const [btConnected, setBtConnected] = useState(false);
-
-  // const timeShiftData = (data, newDatum) => {
-  //   // return data;
-  //   const allData = [...data, newDatum].map((datum, i) => {
-  //     return i > 0 ? Object.assign({}, datum, { t: data[i - 1].t }) : datum;
-  //   });
-  //   allData.shift();
-  //   return allData;
-  // };
-
-  // const handleCharacteristicValueChanged = (event) => {
-  //   // https://developer.mozilla.org/en-US/docs/Web/API/BluetoothRemoteGATTCharacteristic/readValue
-  //   // readValue returns a promise for a DataView object
-  //   // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/DataView
-  //   // the value is sent as an ascii byte array
-  //   const textDecoder = new TextDecoder("ascii");
-  //   const pressure = parseFloat(textDecoder.decode(event.target.value.buffer));
-
-  //   // const pressure = event.target.value.getFloat32();
-  //   // console.log("val changed", event.target.value);
-  //   setActualPressure(pressure);
-  //   updateSensorData((sensorData) => {
-  //     const currStartTime = startTime.current;
-  //     const t = Date.now() - currStartTime;
-  //     // console.log("t", t, currStartTime);
-  //     const newDatum = { bars: pressure, t: t };
-  //     const newSensorData =
-  //       t > 50000
-  //         ? timeShiftData(sensorData, newDatum)
-  //         : [...sensorData, newDatum];
-
-  //     return newSensorData;
-  //   });
-  // };
+  const [view, setView] = useState("profileBrowser");
 
   const handleBtDisconnect = () => {
     setComGndBtDevice(undefined);
     setComGndBtService(undefined);
     setComGndBtPressureCharacteristic(undefined);
-    // setBtConnected(false);
   };
 
   return (
     <Grommet full theme={theme} themeMode="dark">
       <Head>
-        <title>GND CTRL</title>
+        <title>GND-CTRL</title>
         <link rel="icon" href="/favicon.ico" />
         <meta
           name="viewport"
@@ -135,9 +98,12 @@ export default function Home() {
               if (error.name === "NotFoundError") {
                 setErrorMessage(
                   <Box>
-                    <Heading level={3} size="small" margin={{bottom: "small", top: "none"}}>
-                      This browser does not support Bluetooth (
-                      {error.message})
+                    <Heading
+                      level={3}
+                      size="small"
+                      margin={{ bottom: "small", top: "none" }}
+                    >
+                      This browser does not support Bluetooth ({error.message})
                     </Heading>
                     <Text size="small">
                       Please check{" "}
@@ -168,54 +134,18 @@ export default function Home() {
           </Layer>
         )}
         <Box fill={true} border={false} gridArea="main" overflow="hidden">
-          <Profiler comGndBtDevice={comGndBtDevice} />
+          {view === "profileBrowser" ? (
+            <ProfileBrowser />
+          ) : (
+            <Profiler comGndBtDevice={comGndBtDevice} />
+          )}
         </Box>
-        <Box gridArea="controls" direction="row" fill="horizontal" gap="small">
-          {/* <ProfileRunner
-            profile={profile}
-            onChange={(state) => {
-              setProfileData((profileData) => {
-                return [...profileData, state];
-              });
-              // send the target value to the machine. see: https://web.dev/bluetooth/#write
-              if (comGndBtPressureCharacteristic && state.bars) {
-                // const encodedPressure = Uint8Array.of(state.bars);
-                const textDecoder = new TextDecoder("ascii");
-                const encodedPressure = textDecoder.encode(
-                  state.bars.toString()
-                );
-                try {
-                  characteristic.writeValue(encodedPressure);
-                } catch (error) {
-                  console.error("Error writing to bluetooth", error);
-                }
-              }
-            }}
-            onStart={() => {
-              updateSensorData(() => [{ bars: 0, t: 0 }]);
-              setStartTime(Date.now());
-              setIsRunning(true);
-            }}
-            onPause={() => {
-              setIsRunning(false);
-            }}
-            onStop={() => {
-              setIsRunning(false);
-              updateSensorData(() => [{ bars: 0, t: 0 }]);
-              setProfileData(() => [{ bars: 0, t: 0 }]);
-            }}
-          /> */}
-          {/* <Button
-              disabled={comGndBtService == undefined}
-              onClick={() => {
-                updateSensorData(() => [{ bars: 0, t: 0 }]);
-                setStartTime(Date.now());
-                setIsRunning(true);
-              }}
-            >
-              {isRunning ? "Restart" : "Monitor"}
-            </Button> */}
-        </Box>
+        <Box
+          gridArea="controls"
+          direction="row"
+          fill="horizontal"
+          gap="small"
+        ></Box>
         <Box gridArea="footer" border={false}></Box>
       </Grid>
     </Grommet>
