@@ -85,6 +85,27 @@ export default class profile {
     return series;
   }
 
+  static recipeToTimeSeriesData(recipeData) {
+    let timeAcc = 0;
+    let currPressure = 0;
+    
+    const timeSeriesData = recipeData.stages.map((stage) => {
+      const t = timeAcc;
+      const value = 'value' in stage.time ? stage.time.value : stage.time.defaultValue;
+      timeAcc += value;
+      if('pressure' in stage) {
+        if('value' in stage.pressure) {
+          currPressure = stage.pressure.value;
+        } else {
+          currPressure = stage.pressure.defaultValue;
+        }
+      }
+      return { t: timeAcc * 1000, bars: currPressure };
+    });
+    const series = [{ t: 0, bars: 0 }, ...timeSeriesData];
+    return series;
+  }
+
   getSmoothProfile() {
     const series = this.getRecipeTimeSeriesData();
 
