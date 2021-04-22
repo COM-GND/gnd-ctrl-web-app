@@ -21,21 +21,21 @@ export default function Chart({
   pumpDataHistory,
   recipeData,
   timeDomain = 60000,
-  pressureTarget = 5.0,
+  pressureTarget,
   zoom = 1,
 }) {
 
   const userScrolledRef = useRef(false);
 
   const { ref, width, height } = useDimensions({ polyfill: ResizeObserver });
-  const pxPerMs = 0.025 * zoom;
-
+  
   const mostRecentSensorT =
     sensorDataHistory && sensorDataHistory.length > 0
       ? sensorDataHistory[sensorDataHistory.length - 1].t
       : 0;
 
   const xMax = Math.max(mostRecentSensorT, timeDomain);
+  const pxPerMs = zoom == 'fit' ? width / (xMax)  : 0.025 * zoom;
 
   const tMin = 0;
   // max Time is the large of the sensorData max t, the recipeData max t, the timeDomain, or the available space in the window.
@@ -139,6 +139,16 @@ export default function Chart({
   //   });
   // }
 
+
+
+  const renderTick = ({x, y, stroke, payload}) => (
+    <g transform={`translate(${x},${y})`}>
+    <text x={0} y={0} dy={8} textAnchor="middle" fill="#666" style={{fontSize: "10px"}}>
+      {payload.value / 1000}
+    </text>
+  </g>
+  );
+
   return (
     <div
       ref={ref}
@@ -182,12 +192,13 @@ export default function Chart({
         />
         <XAxis
           dataKey="t"
-          interval={0}
+          // interval={0}
           allowDecimals={true}
           type="number"
           tickCount={Math.floor(tRange / 1000) + 1}
           domain={[0, (max) => (chartVisibleMs > xMax ? chartVisibleMs : xMax)]}
           tickFormatter={(value) => parseFloat(value / 1000).toFixed(0)}
+          tick={renderTick}
         />
         {/* <Tooltip /> */}
         {/* <CartesianGrid stroke="#f5f5f5" /> */}
@@ -237,11 +248,11 @@ export default function Chart({
           stroke="hsla(0, 0%, 50%, 1)"
           dot={false}
         />}
-        <ReferenceLine
+        {pressureTarget && <ReferenceLine
           y={pressureTarget}
           stroke="hsla(0, 0%, 100%, .9"
           strokeDasharray="1 4"
-        />
+        />}
       </LineChart>
     </div>
   );

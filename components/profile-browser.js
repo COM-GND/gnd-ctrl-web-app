@@ -60,7 +60,7 @@ export default function ProfileBrowser({}) {
             <Box key={`profile_${i}`}  border={{color: "white"}} height="200px" width="200px">
               <Text> {profileName}</Text>
               <Text>{data[0].recipeName}</Text>
-              <Chart recipeData={data[0].previewData}/>
+              <Chart recipeData={data[0].previewData} zoom='fit'/>
             </Box>
           );
         })}
