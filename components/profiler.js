@@ -17,10 +17,11 @@ import useLocalStorage from "../hooks/use-local-storage";
 const Chart = dynamic(() => import("../components/chart"), { ssr: false });
 const timeAndPressureProfile = new timeAndPressure(fiveStagePressureProfile);
 
-const debugBt = false;
+const debugBt = true;
 
 export default function Profiler({
   comGndBtDevice,
+  recipeId,
   //   liveSensorData,
   onStart = () => {},
   onPause = () => {},
@@ -32,7 +33,7 @@ export default function Profiler({
   const startTimeRef = useRef(startTime);
   const lastPressureReadTimeRef = useRef();
 
-  const [profile, setProfile] = useState(timeAndPressureProfile);
+  const [profile, setProfile] = useState((new timeAndPressure(fiveStagePressureProfile)));
   const profileRef = useRef(profile);
 
   const [profileTotalMs, setProfileTotalMs] = useState(profile.getTotalMs());
@@ -50,9 +51,9 @@ export default function Profiler({
 
   const [showSaveHistory, setShowSaveHistory] = useState(false);
 
-  const recipeId = "c427da9b-50cc-4d47-9a0e-3ce48f813461";
+  // const recipeId = "c427da9b-50cc-4d47-9a0e-3ce48f813461";
 
-  // see if custome recipe has been saved to local storage and load it.
+  // see if custom recipe has been saved to local storage and load it.
   const [storedRecipeData, setStoredRecipeData] = useLocalStorage(
     `${recipeId}:recipe`,
     null
@@ -88,6 +89,15 @@ export default function Profiler({
     readPumpLevel,
     setPumpLevel,
   ] = useComGndModule(comGndBtDevice, "pumpLevel", true, false, true);
+
+  // The value of the boiler external temperature
+  // value is a float in Celsius
+  let [
+    boilerTemperature,
+    boilerTemperatureTimeStamp,
+    readBoilerTemperature,
+    setBoilerTemperature,
+  ] = useComGndModule(comGndBtDevice, "boilerTemperature", true, false, false);
 
   // the state value for the manual pressure control slider UI
   // value is an integer between 0 and 1000. It needs to scaled to 0 to 10 to set the pressureTarget
@@ -136,7 +146,8 @@ export default function Profiler({
   // Update the Sensor Data History array when a sensor value changes
   // TODO: This only runs when the sensor value changes, but we want the graph
   // to update a minimal interval anyway. May need to add a timeout event?
-  useEffect(() => {
+  useEffect( async () => {
+    readBoilerTemperature();
     if (debugBt || (!(pumpLevel === null || pumpLevel === -1) && pressure)) {
       const now = Date.now();
       let offset = startTime;
@@ -150,13 +161,13 @@ export default function Profiler({
       updateSensorDataHistory((history) => {
         const newSensorDataHistory = [
           ...history,
-          { t: t, bars: pressure, pump: pumpLevel > 0 ? pumpLevel * 10 : 0 },
+          { t: t, bars: pressure, pump: pumpLevel > 0 ? pumpLevel * 10 : 0, c: boilerTemperature/10 },
         ]; /*.filter((datum) => datum.t > t - profileTotalMs)*/
         return newSensorDataHistory;
       });
       lastPressureReadTimeRef.current = t;
     }
-  }, [pressure, pressureTimeStamp, pumpLevel, profileTotalMs, startTime]);
+  }, [pressure, pressureTimeStamp, pumpLevel, boilerTemperature, profileTotalMs, startTime]);
 
   useEffect(() => {
     console.log("Target Pressure Change: ", pressureTarget);
@@ -259,7 +270,7 @@ export default function Profiler({
           profileDataHistory={profileDataHistory}
           timeDomain={profileTotalMs}
           recipeData={recipeChartData}
-          pressureTarget={pressureTarget}
+          pressureTarget={isConnected ? pressureTarget : null}
         />
         <Box
           width="28px"
@@ -274,7 +285,7 @@ export default function Profiler({
             zIndex: 10,
           }}
         >
-          <Slider
+          {isConnected && <Slider
             disabled={!isConnected && !isRunning}
             vertical={true}
             min={0}
@@ -301,7 +312,7 @@ export default function Profiler({
             railStyle={{
               opacity: "0",
             }}
-          />
+          />}
           {/* <Range  vertical={true}/> */}
         </Box>
       </Box>
@@ -314,7 +325,7 @@ export default function Profiler({
         gridArea="controls"
         justify="between"
       >
-        <Box flex={false} align="start" basis="1/3">
+        <Box flex={false} align="start" basis="1/3" direction="row" align="center" gap="medium">
           <Button
             onClick={() => setEditorIsOpen(!editorIsOpen)}
             // label={
@@ -329,7 +340,9 @@ export default function Profiler({
               />
             }
           ></Button>
+           {boilerTemperature && <Text size="small">{boilerTemperature}°</Text>}
         </Box>
+       
         <Box flex={false} basis={"1/3"} justify="center">
           <Text size="small" textAlign="center">
             {isRunning && startTime > 0 ? (

@@ -28,20 +28,58 @@ export default function useComGndModule(
 
   const [targetValueTimeStamp, setTargetValueTimestamp] = useState();
 
-  const gattWriteIsInProgress = useRef(false);
-  const gattWriteTimeoutRef = useRef();
+  const gattActionIsInProgress = useRef(false);
+  const gattActionTimeoutRef = useRef();
 
   const serviceId = comGndConfig.bluetooth.serviceId;
   const characteristics = comGndConfig.bluetooth.characteristics;
+
+  const getFloatValue = (buffer) => {
+    if (buffer.byteLength !== 4) {
+      console.error(sensorName, "recevieved malformed value ", buffer);
+      return null;
+    }
+    let value = null;
+    value = new Float32Array(buffer)[0];
+    if (Number.isNaN(value) || value === null) {
+      console.error("Invalid float value in use-com-gnd-bt-module:", value);
+      value = null;
+    } else if (value > 0) {
+      // round to 2 deciman places
+      value = Math.round(value * 100) / 100;
+    }
+    return value;
+  };
 
   const setValue = (targetValue) => {
     setTargetValue(targetValue);
     setTargetValueTimestamp(Date.now());
   };
 
-  const readValue = () => {
-    return(targetValue);
-  }
+  const readValue = async () => {
+    if (
+      isConnected &&
+      comGndBtService &&
+      btCharacteristic &&
+      !gattActionIsInProgress.current
+    ) {
+      try {
+        gattActionIsInProgress.current = true;
+        const value = await btCharacteristic.readValue();
+
+        const floatValue = getFloatValue(value.buffer);
+        setSensorValue(floatValue);
+
+        gattActionIsInProgress.current = false;
+        return floatValue;
+      } catch (error) {
+        console.error("readValue", sensorName, error);
+        gattActionIsInProgress.current = false;
+      }
+    } else if (gattActionIsInProgress.current) {
+      // console.log('gattInProgress');
+    }
+  };
 
   /**
    * Effect to send new value over ble
@@ -53,14 +91,14 @@ export default function useComGndModule(
     async function writeValue() {
       const textEncoder = new TextEncoder();
       //const encodedValue = textEncoder.encode(targetValueRef.current);
-      if (gattWriteTimeoutRef.current) {
-        clearTimeout(gattWriteTimeoutRef.current);
-        // console.log('co', gattWriteTimeoutRef.current );
-        gattWriteTimeoutRef.current = undefined;
+      if (gattActionTimeoutRef.current) {
+        clearTimeout(gattActionTimeoutRef.current);
+        // console.log('co', gattActionTimeoutRef.current );
+        gattActionTimeoutRef.current = undefined;
       }
       try {
-        if (!gattWriteIsInProgress.current) {
-          gattWriteIsInProgress.current = true;
+        if (!gattActionIsInProgress.current) {
+          gattActionIsInProgress.current = true;
           console.log(
             "write bt characteristic value",
             btCharacteristic,
@@ -69,10 +107,10 @@ export default function useComGndModule(
           const encodedValue = textEncoder.encode(targetValueRef.current);
           await btCharacteristic.writeValue(encodedValue);
           // clear after settings
-          gattWriteIsInProgress.current = false;
+          gattActionIsInProgress.current = false;
         } else {
-          if (!gattWriteTimeoutRef.current) {
-            gattWriteTimeoutRef.current = window.setTimeout(writeValue, 5);
+          if (!gattActionTimeoutRef.current) {
+            gattActionTimeoutRef.current = window.setTimeout(writeValue, 5);
           }
         }
       } catch (error) {
@@ -87,7 +125,7 @@ export default function useComGndModule(
     }
 
     return () => {
-      clearTimeout(gattWriteTimeoutRef.current);
+      clearTimeout(gattActionTimeoutRef.current);
     };
   }, [isConnected, btCharacteristic, targetValue]);
 
@@ -95,27 +133,6 @@ export default function useComGndModule(
    * Handle incoming changes to sensor value
    */
   useEffect(async () => {
-
-    function getFloatValue(buffer) {
-      if(buffer.byteLength !== 4) {
-        console.error(sensorName, 'recevieved malformed value ', buffer);
-        return null;
-      }
-      let value = null;
-      value = new Float32Array(buffer)[0];
-      if (Number.isNaN(value) || value === null) {
-        console.error(
-          "Invalid float value in use-com-gnd-bt-module:",
-          value
-        );
-        value = null;
-      } else if(value > 0) {
-        // round to 2 deciman places
-        value = Math.round(value * 100) / 100;
-      }
-      return value;
-    }
-
     function handleCharacteristicValueChanged(event) {
       let value = null;
       //console.log("update:", event.target.value.buffer);
@@ -185,16 +202,21 @@ export default function useComGndModule(
             // setBtCharacteristic(characteristic);
           }
         }
-        console.log(sensorName, 'before', read, comGndBtService, btCharacteristic)
+        console.log(
+          sensorName,
+          "before",
+          read,
+          comGndBtService,
+          btCharacteristic
+        );
         if (read && comGndBtService && btCharacteristic) {
           // read value
           const valueView = await btCharacteristic.readValue();
-          console.log(sensorName, 'Ble Read Value', value, valueView);
+          console.log(sensorName, "Ble Read Value", value, valueView);
           const value = getFloatValue(valueView.buffer);
           const timeStamp = Date.now();
           setSensorValue(value);
           setTimeStamp(timeStamp);
-          
         }
       } catch (error) {
         console.error("Bluetooth Error", error);
@@ -226,5 +248,10 @@ export default function useComGndModule(
   }, [isConnected, comGndBtService, btCharacteristic, notificationsStarted]);
 
   //   console.log("value changed", sensorValue, timeStamp);
-  return [sensorValue, timeStamp, readValue, useThrottleCallback(setValue, 12, true)];
+  return [
+    sensorValue,
+    timeStamp,
+    readValue,
+    useThrottleCallback(setValue, 12, true),
+  ];
 }

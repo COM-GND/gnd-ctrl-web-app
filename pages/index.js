@@ -37,6 +37,8 @@ export default function Home() {
     startTime.current = time;
   };
 
+  const [recipeId, setRecipeId] = useState();
+  const [headingText, setHeadingText] = useState("");
   const [isRunning, setIsRunning] = useState(false);
   const [sensorData, updateSensorData] = useState([{ bars: 0, t: 0 }]);
   const [comGndBtDevice, setComGndBtDevice] = useState();
@@ -49,7 +51,7 @@ export default function Home() {
   const isBtConnected = useComGndBtIsConnected(comGndBtDevice);
   const [errorMessage, setErrorMessage] = useState();
 
-  const [view, setView] = useState("profileBrowser");
+  const [view, setView] = useState(recipeId ? "profiler" : "profileBrowser");
 
   const handleBtDisconnect = () => {
     setComGndBtDevice(undefined);
@@ -75,7 +77,10 @@ export default function Home() {
         areas={[["header"], ["main"], ["controls"], ["footer"]]}
         className="app-container"
       >
-        <Header>
+        <Header onClickHome={() => {
+          setHeadingText("Recipe Browser")
+          setView("profileBrowser")
+        }} heading={headingText}>
           <BluetoothConnectButton
             label="Connect"
             onConnect={async (device, server) => {
@@ -135,9 +140,22 @@ export default function Home() {
         )}
         <Box fill={true} border={false} gridArea="main" overflow="hidden">
           {view === "profileBrowser" ? (
-            <ProfileBrowser />
+            <ProfileBrowser
+              onOpen={(recipeData) => {
+                console.log('open', recipeData)
+                setRecipeId(recipeData.id);
+                setHeadingText(recipeData.recipeName);
+                setView("profiler");
+              }}
+              onAdd={(id) => {
+                console.log('Add Recipe', id);
+                setRecipeId(id);
+                setHeadingText("New Recipe")
+                setView("profiler");
+              }}
+            />
           ) : (
-            <Profiler comGndBtDevice={comGndBtDevice} />
+            <Profiler comGndBtDevice={comGndBtDevice} recipeId={recipeId} />
           )}
         </Box>
         <Box

@@ -12,8 +12,9 @@ import {
 
 import useDimensions from "react-cool-dimensions";
 import { ResizeObserver } from "@juggle/resize-observer";
-
 import filterPressureData from "../utils/filter-pressure-data";
+
+const MemoizedLineChart = react.memo(LineChart);
 
 export default function Chart({
   sensorDataHistory,
@@ -41,7 +42,7 @@ export default function Chart({
   // max Time is the large of the sensorData max t, the recipeData max t, the timeDomain, or the available space in the window.
   const tMax = Math.max(
     xMax,
-    recipeData[recipeData.length - 1].t,
+    recipeData && recipeData.length > 0 ? recipeData[recipeData.length - 1].t : 0,
     width / pxPerMs
   );
   const tRange = tMax - tMin;
@@ -87,7 +88,7 @@ export default function Chart({
   // }
 
   // if the sensorData time goes past the end of the recipe, extend the recipe's last pressure out
-  if (recipeData[recipeData.length - 1].t < xMax) {
+  if (recipeData && recipeData[recipeData.length - 1].t < xMax) {
     //recipeData.push({ t: xMax, bars: recipeData[recipeData.length - 1].bars });
   }
 
@@ -166,7 +167,7 @@ export default function Chart({
         sensorDataHistory[sensorDataHistory.length - 1].t > chartVisibleMs ? "row-reverse" : "row",*/
       }}
     >
-      <LineChart
+      <MemoizedLineChart
         width={chartWidth}
         height={height}
         margin={{ top: 10, right: 10, left: 10, bottom: 0 }}
@@ -241,9 +242,18 @@ export default function Chart({
         {filteredSensorDataHistory&& <Line 
           name="Pump Level"
           isAnimationActive={false}
-          name="live-pump-level"
           id="live-pump-level"
           dataKey="pump"
+          data={filteredSensorDataHistory}
+          stroke="hsla(0, 0%, 50%, 1)"
+          dot={false}
+        />}
+         {filteredSensorDataHistory&& <Line 
+          isAnimationActive={false}
+          name="Boiler Temperature"
+          id="boiler-temp"
+          dataKey="c"
+          strokeDashArray="4 1"
           data={filteredSensorDataHistory}
           stroke="hsla(0, 0%, 50%, 1)"
           dot={false}
@@ -253,7 +263,7 @@ export default function Chart({
           stroke="hsla(0, 0%, 100%, .9"
           strokeDasharray="1 4"
         />}
-      </LineChart>
+      </MemoizedLineChart>
     </div>
   );
 }

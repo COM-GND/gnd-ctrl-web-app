@@ -10,9 +10,11 @@ import useLocalStorage from "../hooks/use-local-storage";
 export default function RecipeEditor({ profileConfig, onChange, recipeId }) {
   console.log("RecipeEditor", profileConfig);
 
-  if(!recipeId) {
-    recipeId = uuidv4();
-  }
+  // if(!recipeId) {
+  //   recipeId = uuidv4();
+  // }
+
+
   const localStorageKey = `${recipeId}:recipe`;
   
   const [recipeName, setRecipeName] = useState("");

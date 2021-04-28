@@ -30,6 +30,15 @@ export default {
                 "read": true,
                 "write": false,
                 "notify": true
+            },
+            "boilerTemperature": {
+                "id": 0x2A1C,
+                "type": "float",
+                "min": 0,
+                "max": 200,
+                "read": true,
+                "write": false,
+                "notify": false
             }
         }
     }
