@@ -36,16 +36,33 @@ export default function Chart({
       : 0;
 
   const xMax = Math.max(mostRecentSensorT, timeDomain);
-  const pxPerMs = zoom == 'fit' ? width / (xMax)  : 0.025 * zoom;
+  const pxPerMs = (()=>{
+    if ( zoom === "fit"){
+      if (xMax / 1000 > width) {
+        console.log('scale down', xMax, width);
+        return width / xMax
+      } else {
+        const scaled = ( width / xMax);
+        console.log('scale up', xMax, width, scaled);
+        return scaled;
+      }
+    } else {
+      return 0.025 * zoom;
+    }
+  })();
+  
+  //zoom == 'fit' ? width / (xMax)  : 0.025 * zoom;
 
   const tMin = 0;
   // max Time is the large of the sensorData max t, the recipeData max t, the timeDomain, or the available space in the window.
-  const tMax = Math.max(
+  const tMax = Math.round(Math.max(
     xMax,
     recipeData && recipeData.length > 0 ? recipeData[recipeData.length - 1].t : 0,
     width / pxPerMs
-  );
+  ));
   const tRange = tMax - tMin;
+
+  console.log('tMax', tMax);
 
   const filteredSensorDataHistory = sensorDataHistory; //filterPressureData(sensorDataHistory);
 

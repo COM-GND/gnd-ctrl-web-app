@@ -77,10 +77,13 @@ export default function Home() {
         areas={[["header"], ["main"], ["controls"], ["footer"]]}
         className="app-container"
       >
-        <Header onClickHome={() => {
-          setHeadingText("Recipe Browser")
-          setView("profileBrowser")
-        }} heading={headingText}>
+        <Header
+          onClickHome={() => {
+            setHeadingText("Recipe Browser");
+            setView("profileBrowser");
+          }}
+          heading={headingText}
+        >
           <BluetoothConnectButton
             label="Connect"
             onConnect={async (device, server) => {
@@ -100,7 +103,8 @@ export default function Home() {
               requestWakeLock(1);
             }}
             onError={(error) => {
-              if (error.name === "NotFoundError") {
+              // An error is thrown if the user cancels the BT modal. We want to ignore that
+              if (!error.message.includes("cancelled")) {
                 setErrorMessage(
                   <Box>
                     <Heading
@@ -140,22 +144,26 @@ export default function Home() {
         )}
         <Box fill={true} border={false} gridArea="main" overflow="hidden">
           {view === "profileBrowser" ? (
-            <ProfileBrowser
-              onOpen={(recipeData) => {
-                console.log('open', recipeData)
-                setRecipeId(recipeData.id);
-                setHeadingText(recipeData.recipeName);
-                setView("profiler");
-              }}
-              onAdd={(id) => {
-                console.log('Add Recipe', id);
-                setRecipeId(id);
-                setHeadingText("New Recipe")
-                setView("profiler");
-              }}
-            />
+            <Box animation={{type: "fadeIn", duration: 1000}}  key="browser-container">
+              <ProfileBrowser
+                onOpen={(recipeData) => {
+                  console.log("open", recipeData);
+                  setRecipeId(recipeData.id);
+                  setHeadingText(recipeData.recipeName);
+                  setView("profiler");
+                }}
+                onAdd={(id) => {
+                  console.log("Add Recipe", id);
+                  setRecipeId(id);
+                  setHeadingText("New Recipe");
+                  setView("profiler");
+                }}
+              />
+            </Box>
           ) : (
-            <Profiler comGndBtDevice={comGndBtDevice} recipeId={recipeId} />
+            <Box animation={{type: "fadeIn", duration: 1000}} fill={true} key="profiler-container">
+              <Profiler comGndBtDevice={comGndBtDevice} recipeId={recipeId} />
+            </Box>
           )}
         </Box>
         <Box

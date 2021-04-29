@@ -35,7 +35,7 @@ export default function BluetoothConnectButton({
         optionalServices: [comGndConfig.bluetooth.serviceId], //["8fc1ceca-b162-4401-9607-c8ac21383e4e"],
       });
     } catch (error) {
-      console.error(error);
+      console.error('Bluetooth requestDevice error:', error);
       onError(error);
     }
 
@@ -49,7 +49,7 @@ export default function BluetoothConnectButton({
         setBtServer(server);
         onConnect(device, server);
       } catch (error) {
-        console.error(error);
+        console.error("Bluetooth connect error:", error);
         onError(error);
       }
       return device;
@@ -88,6 +88,7 @@ export default function BluetoothConnectButton({
               onDisconnect();
               setIsConnected(false);
             } catch (error) {
+              console.error("Bluetooth disconnect error:", error)
               onError(error);
             }
           } else if (!isConnected && btDevice) {
@@ -122,7 +123,7 @@ export default function BluetoothConnectButton({
                 optionalServices: [comGndConfig.bluetooth.serviceId], //["8fc1ceca-b162-4401-9607-c8ac21383e4e"],
               });
             } catch (error) {
-              console.error(error);
+              console.error("Bluetooth requestDevice error:", error);
               onError(error);
             }
 
@@ -136,7 +137,7 @@ export default function BluetoothConnectButton({
                 setBtServer(server);
                 onConnect(device, server);
               } catch (error) {
-                console.error(error);
+                console.error("Bluetooth connect error", error);
                 onError(error);
               }
             }

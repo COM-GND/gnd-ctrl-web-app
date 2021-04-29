@@ -17,7 +17,7 @@ import useLocalStorage from "../hooks/use-local-storage";
 const Chart = dynamic(() => import("../components/chart"), { ssr: false });
 const timeAndPressureProfile = new timeAndPressure(fiveStagePressureProfile);
 
-const debugBt = true;
+const debugBt = false;
 
 export default function Profiler({
   comGndBtDevice,

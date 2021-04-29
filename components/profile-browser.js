@@ -4,13 +4,15 @@ import { v4 as uuidv4 } from "uuid";
 import { Box, Button, Grid, Text, Layer, Anchor, Collapsible } from "grommet";
 import useLocalStorage from "../hooks/use-local-storage";
 import Chart from "../components/chart";
+import profile from "../profiles/time-and-pressure-profile";
 
 export default function ProfileBrowser({
   onAdd = () => {},
   onOpen = () => {},
 }) {
   const [profilesData, setProfilesData] = useState();
-  const [groupBy, setGroupBy] = useState(); //oneOf none, profileName
+  const [maxTimeDomain, setMaxTimeDomain] = useState(0);
+
   useEffect(async () => {
     const getAllProfiles = async () => {
       let items = [];
@@ -37,22 +39,32 @@ export default function ProfileBrowser({
     const profileLoader = await import(`../profiles/${profileFile}`);
     const profileClass = profileLoader.default;
     console.log("profileClass", profileClass);
-    // const profile = new profileClass(
-    //   profileList["Pressure Profile - 5 Stage"][0]
-    // );
+
+    let maxTime = 0;
     profileList = profileList.map((profileData) => {
       console.log("profileData", profileData);
       const previewData = profileClass.recipeToTimeSeriesData(profileData);
       const newProfileData = Object.assign(profileData, {
         previewData: previewData,
       });
+      if(previewData.length > 0 & previewData[previewData.length-1].t > maxTime){
+        maxTime =  previewData[previewData.length-1].t;
+      }
       return newProfileData;
+    }).sort((a, b) => {
+      const nameA = a.recipeName.toLowerCase();
+      const nameB = b.recipeName.toLowerCase();
+      if (nameA < nameB) {
+        return -1;
+      }
+      if (nameA > nameB) {
+        return 1;
+      }
+      return 0;
     });
-    // const profileTimeSeries = profileClass.recipeToTimeSeriesData(
-    //   profileList[0]
-    // );
-    // profileList[0]["previewData"] = profileTimeSeries;
 
+    // For better comparison, we want all the charts to share the same time-domain 
+    setMaxTimeDomain(maxTime);
     setProfilesData(profileList);
   }, []);
 
@@ -94,7 +106,7 @@ export default function ProfileBrowser({
                     <Text size="xsmall">{data.profileName}</Text>
                   </Box>
                   <Box height="120px">
-                  <Chart recipeData={data.previewData} zoom="fit" />
+                  <Chart recipeData={data.previewData} zoom="fit" timeDomain={maxTimeDomain}/>
                   </Box>
                 </Box>
               </Button>

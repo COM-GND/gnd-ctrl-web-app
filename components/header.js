@@ -21,7 +21,7 @@ export default function AppHeader({
             />
           }
         ></Button>
-        <Text>{heading}</Text>
+        <Text truncate={true}>{heading}</Text>
       </Box>
       {children}
     </Header>
