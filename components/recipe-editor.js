@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Box, Button, Text, Heading, RangeInput, TextInput } from "grommet";
+import { Box, Select, Text, Heading, RangeInput, TextInput } from "grommet";
 import { v4 as uuidv4 } from "uuid";
 
 // NOTE: Using localStorge for easier migration to expo if a native app is ever attempted
@@ -7,13 +7,25 @@ import { v4 as uuidv4 } from "uuid";
 // localForage could be a compromise if localStorage becomes a performance issue
 import useLocalStorage from "../hooks/use-local-storage";
 
+const configs = [];
+
+// Import all of the configs inside of the Profiles directory
+// https://webpack.js.org/guides/dependency-management/#require-context
+function importAll(r) {
+  console.log('r', r, r.id, r.keys());
+
+  return r.keys().forEach(key => {
+   const data = r(key).default;
+   data.configFile = key;
+   configs.push(data);
+  });
+}
+
+importAll(require.context('../profiles/', false, /config\.js$/));
+console.log('all configs', configs);
+
 export default function RecipeEditor({ profileConfig, onChange, recipeId }) {
   console.log("RecipeEditor", profileConfig);
-
-  // if(!recipeId) {
-  //   recipeId = uuidv4();
-  // }
-
 
   const localStorageKey = `${recipeId}:recipe`;
   
@@ -32,6 +44,14 @@ export default function RecipeEditor({ profileConfig, onChange, recipeId }) {
     localStorageKey,
     defaultRecipe
   );
+
+  let defaultConfig;
+  const recipeConfigFoundInProfiles = configs.find(config => config.configFile === profileConfig?.configFile);
+  if(recipeConfigFoundInProfiles) {
+    defaultConfig = recipeConfigFoundInProfiles;
+  } else {
+    defaultConfig = recipeData;
+  }
 
   const profileStages = recipeData.stages.slice();
   const [recipeStages, setRecipeStages] = useState(profileStages);
@@ -66,25 +86,13 @@ export default function RecipeEditor({ profileConfig, onChange, recipeId }) {
       : profileStages[stageNum][paramKey].defaultValue;
   };
 
-  // const recipeParamsToRecipe = (params) => {
-  //   const recipe = params.map((stage, i) => {
-  //     const recipeStage = {
-  //       time: { value: stage.time.value || stage.time.defaultValue },
-  //     };
-  //     if (stage?.pressure) {
-  //       recipeStage.pressure = {};
-  //       recipeStage.pressure.value = stage.pressure.defaultValue;
-  //     }
-  //     return recipeStage;
-  //   });
-  //   return recipe;
-  // };
 
   return (
     <Box className="recipe-editor" pad="medium" flex={false}>
       <Heading level={3} size="small" margin={{ vertical: "xsmall" }}>
         Recipe Editor
       </Heading>
+      <Select options={configs} labelKey="profileName" valueKey="configFile" defaultValue={defaultConfig.configFile}/>
       <Heading level={4} size="small" margin={{ vertical: "xsmall" }} color={{dark: "light-1"}}>
         {recipeData.profileName}
       </Heading>

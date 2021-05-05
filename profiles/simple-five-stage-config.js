@@ -1,5 +1,5 @@
 const pressureProfile = {
-  profileName: "Pressure Profile - 5 Stage",
+  profileName: "Simple Five Stage",
   profile: "time-and-pressue",
   profileFile: 'time-and-pressure-profile.js',
   stages: [

@@ -101,7 +101,7 @@ export default function ProfileBrowser({
                   overflow="hidden"
                   justify="between"
                 >
-                  <Box flex={{grow: true}}>
+                  <Box>
                     <Text size="small"> {data.recipeName}</Text>
                     <Text size="xsmall">{data.profileName}</Text>
                   </Box>

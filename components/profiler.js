@@ -4,7 +4,7 @@ import { Box, Button, Grid, Text, Layer, Anchor, Collapsible } from "grommet";
 import useComGndBtIsConnected from "../hooks/use-com-gnd-bt-is-connected";
 import ProfileRunner from "./profile-runner.js";
 import timeAndPressure from "../profiles/time-and-pressure-profile.js";
-import fiveStagePressureProfile from "../profiles/time-and-pressure-5-stage-config";
+import fiveStagePressureProfile from "../profiles/simple-five-stage-config.js";
 import useComGndModule from "../hooks/use-com-gnd-bt-module";
 import NodeAddIcon from "../svgs/note_add-24px.svg";
 import DeleteIcon from "../svgs/delete-24px.svg";
@@ -15,7 +15,7 @@ import "rc-slider/assets/index.css";
 import useLocalStorage from "../hooks/use-local-storage";
 
 const Chart = dynamic(() => import("../components/chart"), { ssr: false });
-const timeAndPressureProfile = new timeAndPressure(fiveStagePressureProfile);
+// const timeAndPressureProfile = new timeAndPressure(fiveStagePressureProfile);
 
 const debugBt = false;
 
@@ -33,13 +33,21 @@ export default function Profiler({
   const startTimeRef = useRef(startTime);
   const lastPressureReadTimeRef = useRef();
 
-  const [profile, setProfile] = useState((new timeAndPressure(fiveStagePressureProfile)));
+  // see if custom recipe has been saved to local storage and load it.
+  const [storedRecipeData, setStoredRecipeData] = useLocalStorage(
+    `${recipeId}:recipe`,
+    null
+  );
+  const [storedHistoryData, setStoredHistoryData] = useLocalStorage(
+    `${recipeId}:history:${new Date().toISOString()}`,
+    null
+  );
+
+  const [profile, setProfile] = useState();
   const profileRef = useRef(profile);
 
-  const [profileTotalMs, setProfileTotalMs] = useState(profile.getTotalMs());
-  const [recipeChartData, setRecipeChartData] = useState(
-    profile.getRecipeTimeSeriesData()
-  );
+  const [profileTotalMs, setProfileTotalMs] = useState();
+  const [recipeChartData, setRecipeChartData] = useState();
   const [isRunning, setIsRunning] = useState(false);
   const [profileDataHistory, updateProfileDataHistory] = useState([]);
   const [sensorDataHistory, updateSensorDataHistory] = useState([
@@ -51,17 +59,33 @@ export default function Profiler({
 
   const [showSaveHistory, setShowSaveHistory] = useState(false);
 
-  // const recipeId = "c427da9b-50cc-4d47-9a0e-3ce48f813461";
+  // useEffect(() => {
+  //   console.log("profile?", profile);
+  //   if(!profile) {
+  //     return;
+  //   }
+  //   setProfileTotalMs(profile.getTotalMs());
+  //   setRecipeChartData(profile.getRecipeTimeSeriesData());
+  // }, [profile]);
 
-  // see if custom recipe has been saved to local storage and load it.
-  const [storedRecipeData, setStoredRecipeData] = useLocalStorage(
-    `${recipeId}:recipe`,
-    null
-  );
-  const [storedHistoryData, setStoredHistoryData] = useLocalStorage(
-    `${recipeId}:history:${(new Date()).toISOString()}`,
-    null
-  );
+  useEffect(async () => {
+    const profileConfigFileName = storedRecipeData && storedRecipeData.recipeFile
+    ? storedRecipeData.recipeFile
+    : 'simple-five-stage-config.js';
+
+    console.log("profileConfigFileName", profileConfigFileName);
+    const profileConfigData = await import(`../profiles/${profileConfigFileName}`);
+    const data = profileConfigData.default;
+    data.configFile = profileConfigFileName;
+
+    console.log("profileConfigData", data);
+    const profileClass = new timeAndPressure(data);
+    setProfile(profileClass);
+    setProfileTotalMs(profileClass.getTotalMs());
+    setRecipeChartData(profileClass.getRecipeTimeSeriesData());
+    
+  }, []);
+
   // pressure is the pressure sensor reading in bars from the com-gnd pressure sensor module hardware
   // value is a float between 0.0 and 10.0 (bars)
   let [
@@ -99,7 +123,7 @@ export default function Profiler({
     setBoilerTemperature,
   ] = useComGndModule(comGndBtDevice, "boilerTemperature", true, false, false);
 
-  // the state value for the manual pressure control slider UI
+  // The state value for the manual pressure control slider UI
   // value is an integer between 0 and 1000. It needs to scaled to 0 to 10 to set the pressureTarget
   const [pressureSliderValue, setPressureSliderValue] = useState(
     pressureTarget || 0
@@ -118,10 +142,12 @@ export default function Profiler({
   //console.log('pumpLevel init', pumpLevel);
   const handleRecipeEditorChange = (newRecipeData) => {
     console.log("handleRecipeEditorChange", newRecipeData);
-    profileRef.current.setParameters(newRecipeData);
-    const newChartData = profileRef.current.getRecipeTimeSeriesData();
-    setRecipeChartData(newChartData);
-    setProfileTotalMs(profileRef.current.getTotalMs());
+    if(profileRef.current) {
+      profileRef.current.setParameters(newRecipeData);
+      const newChartData = profileRef.current.getRecipeTimeSeriesData();
+      setRecipeChartData(newChartData);
+      setProfileTotalMs(profileRef.current.getTotalMs());
+    }
   };
 
   /**
@@ -146,7 +172,7 @@ export default function Profiler({
   // Update the Sensor Data History array when a sensor value changes
   // TODO: This only runs when the sensor value changes, but we want the graph
   // to update a minimal interval anyway. May need to add a timeout event?
-  useEffect( async () => {
+  useEffect(async () => {
     readBoilerTemperature();
     if (debugBt || (!(pumpLevel === null || pumpLevel === -1) && pressure)) {
       const now = Date.now();
@@ -161,13 +187,25 @@ export default function Profiler({
       updateSensorDataHistory((history) => {
         const newSensorDataHistory = [
           ...history,
-          { t: t, bars: pressure, pump: pumpLevel > 0 ? pumpLevel * 10 : 0, c: boilerTemperature/10 },
+          {
+            t: t,
+            bars: pressure,
+            pump: pumpLevel > 0 ? pumpLevel * 10 : 0,
+            c: boilerTemperature / 10,
+          },
         ]; /*.filter((datum) => datum.t > t - profileTotalMs)*/
         return newSensorDataHistory;
       });
       lastPressureReadTimeRef.current = t;
     }
-  }, [pressure, pressureTimeStamp, pumpLevel, boilerTemperature, profileTotalMs, startTime]);
+  }, [
+    pressure,
+    pressureTimeStamp,
+    pumpLevel,
+    boilerTemperature,
+    profileTotalMs,
+    startTime,
+  ]);
 
   useEffect(() => {
     console.log("Target Pressure Change: ", pressureTarget);
@@ -201,7 +239,7 @@ export default function Profiler({
             // gridArea="sidebar"
           >
             <RecipeEditor
-              profileConfig={timeAndPressureProfile.getParameters()}
+              profileConfig={profile ? profile.getParameters() : {}}
               onChange={handleRecipeEditorChange}
               recipeId={recipeId}
             />
@@ -285,34 +323,36 @@ export default function Profiler({
             zIndex: 10,
           }}
         >
-          {isConnected && <Slider
-            disabled={!isConnected && !isRunning}
-            vertical={true}
-            min={0}
-            max={1000}
-            defaultValue={pressureTarget * 100}
-            value={pressureSliderValue}
-            onBeforeChange={() => setPressureSliderIsActive(true)}
-            onChange={(val) => {
-              setPressureSliderValue(val);
-              setPressureTarget(val / 100);
-            }}
-            onAfterChange={() => setPressureSliderIsActive(false)}
-            handleStyle={{
-              border: "none",
-              opacity: ".3",
-              width: "32px",
-              height: "32px",
-              marginLeft: "-16px",
-            }}
-            trackStyle={{
-              opacity: "0",
-              background: "white",
-            }}
-            railStyle={{
-              opacity: "0",
-            }}
-          />}
+          {isConnected && (
+            <Slider
+              disabled={!isConnected && !isRunning}
+              vertical={true}
+              min={0}
+              max={1000}
+              defaultValue={pressureTarget * 100}
+              value={pressureSliderValue}
+              onBeforeChange={() => setPressureSliderIsActive(true)}
+              onChange={(val) => {
+                setPressureSliderValue(val);
+                setPressureTarget(val / 100);
+              }}
+              onAfterChange={() => setPressureSliderIsActive(false)}
+              handleStyle={{
+                border: "none",
+                opacity: ".3",
+                width: "32px",
+                height: "32px",
+                marginLeft: "-16px",
+              }}
+              trackStyle={{
+                opacity: "0",
+                background: "white",
+              }}
+              railStyle={{
+                opacity: "0",
+              }}
+            />
+          )}
           {/* <Range  vertical={true}/> */}
         </Box>
       </Box>
@@ -325,7 +365,14 @@ export default function Profiler({
         gridArea="controls"
         justify="between"
       >
-        <Box flex={false} align="start" basis="1/3" direction="row" align="center" gap="medium">
+        <Box
+          flex={false}
+          align="start"
+          basis="1/3"
+          direction="row"
+          align="center"
+          gap="medium"
+        >
           <Button
             onClick={() => setEditorIsOpen(!editorIsOpen)}
             // label={
@@ -340,9 +387,9 @@ export default function Profiler({
               />
             }
           ></Button>
-           {boilerTemperature && <Text size="small">{boilerTemperature}°</Text>}
+          {boilerTemperature && <Text size="small">{boilerTemperature}°</Text>}
         </Box>
-       
+
         <Box flex={false} basis={"1/3"} justify="center">
           <Text size="small" textAlign="center">
             {isRunning && startTime > 0 ? (
@@ -449,7 +496,7 @@ export default function Profiler({
                 }
                 onClick={() => {
                   const saveData = {
-                    created: (new Date()).toISOString(),
+                    created: new Date().toISOString(),
                     recipeId: recipeId,
                     sensorData: sensorDataHistory,
                     recipeData: recipeChartData,
