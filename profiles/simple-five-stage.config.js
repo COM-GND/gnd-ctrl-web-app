@@ -1,10 +1,10 @@
 const pressureProfile = {
   profileName: "Simple Five Stage",
-  profile: "time-and-pressue",
-  profileFile: 'time-and-pressure-profile.js',
+  profilerId: "time-and-pressue",
+  profilerFile: "time-and-pressure.profiler.js",
   stages: [
     {
-      name: "Pre Infusion",
+      name: "Pre Infusion Ramp Up",
       time: {
         name: "Time",
         id: "pre-infusion-time",
@@ -27,7 +27,7 @@ const pressureProfile = {
       },
     },
     {
-      name: "Bloom",
+      name: "Pre Infusion",
       time: {
         name: "Time",
         defaultValue: 5,

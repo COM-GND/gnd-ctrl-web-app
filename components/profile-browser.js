@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from "uuid";
 import { Box, Button, Grid, Text, Layer, Anchor, Collapsible } from "grommet";
 import useLocalStorage from "../hooks/use-local-storage";
 import Chart from "../components/chart";
-import profile from "../profiles/time-and-pressure-profile";
+// import profile from "../profiles/time-and-pressure.profiler";
 
 export default function ProfileBrowser({
   onAdd = () => {},
@@ -35,8 +35,8 @@ export default function ProfileBrowser({
     };
 
     let profileList = await getAllProfiles();
-    const profileFile = "time-and-pressure-profile.js";
-    const profileLoader = await import(`../profiles/${profileFile}`);
+    const profilerFile = "time-and-pressure.profiler.js";
+    const profileLoader = await import(`../profiles/${profilerFile}`);
     const profileClass = profileLoader.default;
     console.log("profileClass", profileClass);
 
@@ -52,8 +52,8 @@ export default function ProfileBrowser({
       }
       return newProfileData;
     }).sort((a, b) => {
-      const nameA = a.recipeName.toLowerCase();
-      const nameB = b.recipeName.toLowerCase();
+      const nameA = a?.recipeName.toLowerCase();
+      const nameB = b?.recipeName.toLowerCase();
       if (nameA < nameB) {
         return -1;
       }

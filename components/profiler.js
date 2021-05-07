@@ -3,8 +3,8 @@ import { useState, useEffect, useRef } from "react";
 import { Box, Button, Grid, Text, Layer, Anchor, Collapsible } from "grommet";
 import useComGndBtIsConnected from "../hooks/use-com-gnd-bt-is-connected";
 import ProfileRunner from "./profile-runner.js";
-import timeAndPressure from "../profiles/time-and-pressure-profile.js";
-import fiveStagePressureProfile from "../profiles/simple-five-stage-config.js";
+import timeAndPressure from "../profiles/time-and-pressure.profiler.js";
+import fiveStagePressureProfile from "../profiles/simple-five-stage.config.js";
 import useComGndModule from "../hooks/use-com-gnd-bt-module";
 import NodeAddIcon from "../svgs/note_add-24px.svg";
 import DeleteIcon from "../svgs/delete-24px.svg";
@@ -33,6 +33,7 @@ export default function Profiler({
   const startTimeRef = useRef(startTime);
   const lastPressureReadTimeRef = useRef();
 
+  console.log('Profiler for', recipeId);
   // see if custom recipe has been saved to local storage and load it.
   const [storedRecipeData, setStoredRecipeData] = useLocalStorage(
     `${recipeId}:recipe`,
@@ -43,8 +44,12 @@ export default function Profiler({
     null
   );
 
-  const [profile, setProfile] = useState();
+  const [profile, _setProfile] = useState();
   const profileRef = useRef(profile);
+  const setProfile = (newProfile) => {
+    profileRef.current = newProfile;
+    _setProfile(newProfile);
+  };
 
   const [profileTotalMs, setProfileTotalMs] = useState();
   const [recipeChartData, setRecipeChartData] = useState();
@@ -71,15 +76,15 @@ export default function Profiler({
   useEffect(async () => {
     const profileConfigFileName = storedRecipeData && storedRecipeData.recipeFile
     ? storedRecipeData.recipeFile
-    : 'simple-five-stage-config.js';
+    : 'simple-five-stage.config.js';
 
     console.log("profileConfigFileName", profileConfigFileName);
     const profileConfigData = await import(`../profiles/${profileConfigFileName}`);
     const data = profileConfigData.default;
     data.configFile = profileConfigFileName;
 
-    console.log("profileConfigData", data);
-    const profileClass = new timeAndPressure(data);
+    console.log("profileConfigData", storedRecipeData, data);
+    const profileClass = new timeAndPressure(storedRecipeData || data);
     setProfile(profileClass);
     setProfileTotalMs(profileClass.getTotalMs());
     setRecipeChartData(profileClass.getRecipeTimeSeriesData());
@@ -239,7 +244,7 @@ export default function Profiler({
             // gridArea="sidebar"
           >
             <RecipeEditor
-              profileConfig={profile ? profile.getParameters() : {}}
+              defaultProfileConfig={profile ? profile.getParameters() : {}}
               onChange={handleRecipeEditorChange}
               recipeId={recipeId}
             />

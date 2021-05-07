@@ -8,28 +8,41 @@ import { v4 as uuidv4 } from "uuid";
 import useLocalStorage from "../hooks/use-local-storage";
 
 const configs = [];
-
+const profilers = [];
 // Import all of the configs inside of the Profiles directory
 // https://webpack.js.org/guides/dependency-management/#require-context
 function importAll(r) {
-  console.log('r', r, r.id, r.keys());
+  console.log("r", r, r.id, r.keys());
 
-  return r.keys().forEach(key => {
-   const data = r(key).default;
-   data.configFile = key;
-   configs.push(data);
+  return r.keys().forEach((key) => {
+    if (key.includes("config.js")) {
+      const data = r(key).default;
+      data.configFile = key;
+      configs.push(data);
+    } else if (key.includes("profiler.js")) {
+      const profilerClass = r(key).default;
+      profilers.push(profilerClass);
+    }
   });
 }
 
-importAll(require.context('../profiles/', false, /config\.js$/));
-console.log('all configs', configs);
+importAll(require.context("../profiles/", false, /\.js$/));
+console.log("all configs", configs);
 
-export default function RecipeEditor({ profileConfig, onChange, recipeId }) {
-  console.log("RecipeEditor", profileConfig);
+export default function RecipeEditor({ defaultProfileConfig, onChange, recipeId }) {
+  console.log("RecipeEditor", defaultProfileConfig);
+
+  // let defaultConfig;
+  // const recipeConfigFoundInProfiles = configs.find(
+  //   (config) => config.configFile === defaultProfileConfig?.configFile
+  // );
+  // if (recipeConfigFoundInProfiles) {
+  //   defaultConfig = recipeConfigFoundInProfiles;
+  // } else {
+  //   defaultConfig = recipeData;
+  // }
 
   const localStorageKey = `${recipeId}:recipe`;
-  
-  const [recipeName, setRecipeName] = useState("");
 
   const defaultRecipeProperties = {
     id: recipeId,
@@ -38,62 +51,93 @@ export default function RecipeEditor({ profileConfig, onChange, recipeId }) {
     modified: new Date(),
   };
 
-  const defaultRecipe = Object.assign(defaultRecipeProperties, profileConfig);
+  //const defaultRecipe = Object.assign(defaultRecipeProperties, defaultProfileConfig);
 
-  const [recipeData, setRecipeData] = useLocalStorage(
+  const [recipeData, _setRecipeData] = useLocalStorage(
     localStorageKey,
-    defaultRecipe
+    Object.assign(defaultRecipeProperties, defaultProfileConfig)
   );
 
-  let defaultConfig;
-  const recipeConfigFoundInProfiles = configs.find(config => config.configFile === profileConfig?.configFile);
-  if(recipeConfigFoundInProfiles) {
-    defaultConfig = recipeConfigFoundInProfiles;
-  } else {
-    defaultConfig = recipeData;
+  const recipeDataRef = useRef(recipeData);
+
+  const setRecipeData = (recipeData) => {
+    recipeDataRef.current = recipeData;
+    _setRecipeData(recipeData);
   }
 
-  const profileStages = recipeData.stages.slice();
-  const [recipeStages, setRecipeStages] = useState(profileStages);
-
   useEffect(() => {
-    console.log('edit first load');
+    console.log("edit first load");
     onChange(recipeData);
   }, []);
 
   const handleRecipeNameChange = (e) => {
     const newName = e.target.value;
-    const newRecipeData = Object.assign({}, recipeData);
+    const newRecipeData = Object.assign({}, recipeDataRef.current);
     newRecipeData.recipeName = newName;
     setRecipeData(newRecipeData);
     onChange(newRecipeData);
   };
 
+  const handleProfileConfigChange = ({ value, option }) => {
+    console.log("handleProfileConfigChange", value, option);
+    const newRecipeData = Object.assign({}, value);
+    newRecipeData.recipeName = recipeDataRef.current.recipeName;
+    newRecipeData.id = recipeDataRef.current.id;
+    setRecipeData(newRecipeData);
+    onChange(newRecipeData);
+  };
+
   const setStageParamValue = (stageNum, paramKey, value) => {
-    const newRecipeStages = recipeStages.slice();
-    newRecipeStages[stageNum][paramKey].value = value;
-    setRecipeStages(newRecipeStages);
-    const newRecipeData = Object.assign({}, recipeData);
-    newRecipeData.stages = newRecipeStages;
+    const newRecipeData = Object.assign({}, recipeDataRef.current);
+    //const newRecipeStages = recipeDataRef.current.stage.slice();
+    newRecipeData.stages[stageNum][paramKey].value = value;
+    //setRecipeStages(newRecipeStages);
+    //const newRecipeData = Object.assign({}, recipeData);
+    //newRecipeData.stages = newRecipeStages;
+    console.log('setStageParamValue', newRecipeData);
     setRecipeData(newRecipeData);
     //const newRecipe = recipeParamsToRecipe(newRecipeStages);
     onChange(newRecipeData);
   };
 
   const getStageParamValue = (stageNum, paramKey) => {
+    if(!recipeDataRef.current) {
+      return;
+    }
+  
+    const profileStages = recipeDataRef.current.stages;
+    if(!profileStages[stageNum]) {
+      console.error(`Stage ${stageNum} does not exist in profile.`);
+      return;
+    }
+
+    if(!profileStages[stageNum][paramKey]) {
+      console.error(`Parameter ${paramKey} does not exist in stage ${stageNum}.`);
+      return;
+    }
     return profileStages[stageNum][paramKey].value !== undefined
       ? profileStages[stageNum][paramKey].value
       : profileStages[stageNum][paramKey].defaultValue;
   };
-
 
   return (
     <Box className="recipe-editor" pad="medium" flex={false}>
       <Heading level={3} size="small" margin={{ vertical: "xsmall" }}>
         Recipe Editor
       </Heading>
-      <Select options={configs} labelKey="profileName" valueKey="configFile" defaultValue={defaultConfig.configFile}/>
-      <Heading level={4} size="small" margin={{ vertical: "xsmall" }} color={{dark: "light-1"}}>
+      <Select
+        options={configs}
+        labelKey="profileName"
+        valueKey="configFile"
+        value={recipeData}
+        onChange={handleProfileConfigChange}
+      />
+      <Heading
+        level={4}
+        size="small"
+        margin={{ vertical: "xsmall" }}
+        color={{ dark: "light-1" }}
+      >
         {recipeData.profileName}
       </Heading>
       <Box pad={{ vertical: "medium" }}>
@@ -103,7 +147,7 @@ export default function RecipeEditor({ profileConfig, onChange, recipeId }) {
           value={recipeData.recipeName}
         ></TextInput>
       </Box>
-      {recipeStages.map((stage, i) => (
+      {recipeData.stages.map((stage, i) => (
         <Box
           key={`profile_stage_${i}`}
           flex={false}

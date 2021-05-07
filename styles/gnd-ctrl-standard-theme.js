@@ -4,7 +4,12 @@ const theme = {
       "accent-1": "whitesmoke",
       "control": "white", // changes the button border color
       "brand": "whitesmoke",
-      "dark-1": "hsl(0,0%,6%)"
+      "dark-1": "hsl(0,0%,6%)",
+      "dark-2": "hsl(0,0%,12%)",
+      "dark-3": "hsl(0,0%,18%)"
+    },
+    selected: {
+      background: {light: "whitesmoke", dark: "dark-2"}
     },
     spacing: "24px", // effects the size of the slider thumb
     font: {
