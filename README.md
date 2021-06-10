@@ -21,14 +21,13 @@ COM-GND Espresso is designed to provide flexibility in what hardware modules are
 The minimum required hardware is the COM-GND Base unit and the Pump Control Module. 
 
 Current Modules
- - COM-GND Base: Serves as hub for other modules and provides bluetooth communication for pump power, pressure sensor, and target pressure values via BLE. 
+ - COM-GND Base: Serves as hub for other modules and provides bluetooth communication for pump power, water temperature, pressure sensor, and target pressure values via BLE. 
  - Pump Control: Allows for control of vibration pump power level by either manual dial or app control. Enables pre-infusion and basic profiling. 
- - Pressure Sensor: Adds real-time pressure sensing. Enables true pressure profiling. 
+ - Pressure: Adds real-time pressure sensing and PID control. Enables true pressure profiling. 
  - Rotary Encoder: Enable manual control of pump or pressure level through a rotary control. 
- 
+ - Water Temperature: Read and PID control the temperate of the water boiler.
 
  Future Modules
- - Temperature PID
  - Bluetooth Shot Scale
 
 ## Profiles

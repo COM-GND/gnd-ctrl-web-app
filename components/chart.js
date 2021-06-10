@@ -275,6 +275,15 @@ export default function Chart({
           stroke="hsla(0, 0%, 50%, 1)"
           dot={false}
         />}
+        {filteredSensorDataHistory&& <Line 
+          isAnimationActive={false}
+          name="Boiler Temperature"
+          id="flow"
+          dataKey="flow"
+          data={filteredSensorDataHistory}
+          stroke="hsla(0, 0%, 50%, 1)"
+          dot={false}
+        />}
         {pressureTarget && <ReferenceLine
           y={pressureTarget}
           stroke="hsla(0, 0%, 100%, .9"

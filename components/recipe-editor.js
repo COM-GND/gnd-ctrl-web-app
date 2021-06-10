@@ -74,6 +74,7 @@ export default function RecipeEditor({ defaultProfileConfig, onChange, recipeId 
     const newName = e.target.value;
     const newRecipeData = Object.assign({}, recipeDataRef.current);
     newRecipeData.recipeName = newName;
+    newRecipeData.modified = new Date();
     setRecipeData(newRecipeData);
     onChange(newRecipeData);
   };
@@ -83,12 +84,15 @@ export default function RecipeEditor({ defaultProfileConfig, onChange, recipeId 
     const newRecipeData = Object.assign({}, value);
     newRecipeData.recipeName = recipeDataRef.current.recipeName;
     newRecipeData.id = recipeDataRef.current.id;
+    newRecipeData.created = recipeDataRef.created;
+    newRecipeData.modified = new Date();
     setRecipeData(newRecipeData);
     onChange(newRecipeData);
   };
 
   const setStageParamValue = (stageNum, paramKey, value) => {
     const newRecipeData = Object.assign({}, recipeDataRef.current);
+    newRecipeData.modified = new Date();
     //const newRecipeStages = recipeDataRef.current.stage.slice();
     newRecipeData.stages[stageNum][paramKey].value = value;
     //setRecipeStages(newRecipeStages);

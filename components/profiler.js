@@ -128,6 +128,15 @@ export default function Profiler({
     setBoilerTemperature,
   ] = useComGndModule(comGndBtDevice, "boilerTemperature", true, false, false);
 
+  // The value of the pump in-flow rate
+  // value is a float in Celsius
+  let [
+    flowRate,
+    flowRateTimeStamp,
+    readFlowRate,
+    setFlowRate,
+  ] = useComGndModule(comGndBtDevice, "flowRate", true, false, false);
+
   // The state value for the manual pressure control slider UI
   // value is an integer between 0 and 1000. It needs to scaled to 0 to 10 to set the pressureTarget
   const [pressureSliderValue, setPressureSliderValue] = useState(
@@ -179,6 +188,8 @@ export default function Profiler({
   // to update a minimal interval anyway. May need to add a timeout event?
   useEffect(async () => {
     readBoilerTemperature();
+    readFlowRate();
+
     if (debugBt || (!(pumpLevel === null || pumpLevel === -1) && pressure)) {
       const now = Date.now();
       let offset = startTime;
@@ -196,6 +207,7 @@ export default function Profiler({
             t: t,
             bars: pressure,
             pump: pumpLevel > 0 ? pumpLevel * 10 : 0,
+            flow: (flowRate / 500.0) * 10,
             c: boilerTemperature / 10,
           },
         ]; /*.filter((datum) => datum.t > t - profileTotalMs)*/
@@ -393,6 +405,7 @@ export default function Profiler({
             }
           ></Button>
           {boilerTemperature && <Text size="small">{boilerTemperature}°</Text>}
+          {flowRate && <Text size="small">{flowRate}°</Text>}
         </Box>
 
         <Box flex={false} basis={"1/3"} justify="center">
