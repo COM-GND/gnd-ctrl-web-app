@@ -33,7 +33,7 @@ export default function Profiler({
   const startTimeRef = useRef(startTime);
   const lastPressureReadTimeRef = useRef();
 
-  console.log('Profiler for', recipeId);
+  // console.log('Profiler for', recipeId);
   // see if custom recipe has been saved to local storage and load it.
   const [storedRecipeData, setStoredRecipeData] = useLocalStorage(
     `${recipeId}:recipe`,
@@ -207,7 +207,7 @@ export default function Profiler({
             t: t,
             bars: pressure,
             pump: pumpLevel > 0 ? pumpLevel * 10 : 0,
-            flow: (flowRate / 500.0) * 10,
+            flow: flowRate > 0 ? (flowRate / 500.0) * 10 : 0,
             c: boilerTemperature / 10,
           },
         ]; /*.filter((datum) => datum.t > t - profileTotalMs)*/
@@ -423,7 +423,7 @@ export default function Profiler({
         </Box>
         <Box flex={false} basis={"1/3"} align="end" pad={{ right: "medium" }}>
           <ProfileRunner
-            profile={profile}
+            profileInstance={profileRef.current}
             pumpLevel={pumpLevel}
             disabled={!isConnected}
             onChange={(state) => {

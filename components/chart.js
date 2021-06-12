@@ -62,8 +62,6 @@ export default function Chart({
   ));
   const tRange = tMax - tMin;
 
-  console.log('tMax', tMax);
-
   const filteredSensorDataHistory = sensorDataHistory; //filterPressureData(sensorDataHistory);
 
   // recharts will fit the tRange into the available width

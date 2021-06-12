@@ -7,7 +7,9 @@
     "dev-https": "node ./https-server.js",
     "build": "next build",
     "start": "next start",
-    "start-https": "NODE_ENV=production node ./https-server.js"
+    "start-https": "NODE_ENV=production node ./https-server.js",
+    "deploy": "yarn build && vercel --prod",
+    "deploy-staging": "yarn build && vercel"
   },
   "dependencies": {
     "@juggle/resize-observer": "^3.3.0",

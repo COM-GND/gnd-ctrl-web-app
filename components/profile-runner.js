@@ -5,7 +5,7 @@ import StopIcon from "../svgs/stop-24px.svg";
 import PauseIcon from "../svgs/pause-24px.svg";
 
 export default function ProfileRunner({
-  profile,
+  profileInstance,
   liveData,
   pumpLevel,
   disabled,
@@ -21,6 +21,13 @@ export default function ProfileRunner({
   // console.log('pumpLevel', pumpLevel);
   // const isWaitingForPumpRef = useRef(isWaitingForPump);
   const pumpLevelRef = useRef(pumpLevel);
+
+  const [profile, _setProfile] = useState(profileInstance);
+  const profileRef = useRef(profile);
+  const setProfile = (newProfile) => {
+    profileRef.current = newProfile;
+    _setProfile(newProfile);
+  }
 
   const [runState, _setRunState] = useState("stop");
   const runStateRef = useRef(runState);
@@ -56,14 +63,19 @@ export default function ProfileRunner({
     // );
     if (runStateRef.current === "play" && pumpLevelRef.current !== -1) {
       setRunTime(runTimeRef.current + tickLength);
-      if (runTimeRef.current < profile.getTotalMs()) {
-        const state = profile.getStateAtTime(runTimeRef.current);
-        console.log("state", state);
-        onChange(state);
+      if(profileRef.current) {
+        if (runTimeRef.current < profileRef.current.getTotalMs()) {
+          const state = profileRef.current.getStateAtTime(runTimeRef.current);
+          console.log("state", state);
+          onChange(state);
+        } else {
+          // setRunState("stop");
+          // onStop();
+        }
       } else {
-        // setRunState("stop");
-        // onStop();
+        console.warn('Profile not loaded', profileInstance, profile, profileRef.current);
       }
+    
     } else if (
       runTimeRef.current > 0 &&
       (runStateRef.current === "play" || runStateRef.current === "pause") &&
@@ -88,6 +100,11 @@ export default function ProfileRunner({
   useEffect(() => {
     pumpLevelRef.current = pumpLevel;
   }, [pumpLevel]);
+
+  useEffect(() => {
+    console.log('profile updateed', profileInstance);
+    setProfile(profileInstance);
+  }, [profileInstance]);
 
   return (
     <Box direction="row" gap="xxsmall" className="profile-runner" flex={false}>

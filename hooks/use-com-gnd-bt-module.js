@@ -48,6 +48,10 @@ export default function useComGndModule(
       // round to 2 deciman places
       value = Math.round(value * 100) / 100;
     }
+
+    if(sensorName == "flowRate") {
+      // console.log('flow ', buffer, value);
+    }
     return value;
   };
 
