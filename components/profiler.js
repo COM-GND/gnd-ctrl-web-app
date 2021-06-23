@@ -6,6 +6,7 @@ import ProfileRunner from "./profile-runner.js";
 import timeAndPressure from "../profiles/time-and-pressure.profiler.js";
 import fiveStagePressureProfile from "../profiles/simple-five-stage.config.js";
 import useComGndModule from "../hooks/use-com-gnd-bt-module";
+import useComGndBtModuleMonitor from "../hooks/use-com-gnd-bt-module-monitor";
 import NodeAddIcon from "../svgs/note_add-24px.svg";
 import DeleteIcon from "../svgs/delete-24px.svg";
 import RecipeEditor from "./recipe-editor";
@@ -17,7 +18,7 @@ import useLocalStorage from "../hooks/use-local-storage";
 const Chart = dynamic(() => import("../components/chart"), { ssr: false });
 // const timeAndPressureProfile = new timeAndPressure(fiveStagePressureProfile);
 
-const debugBt = false;
+const debugBt = true;
 
 export default function Profiler({
   comGndBtDevice,
@@ -74,12 +75,15 @@ export default function Profiler({
   // }, [profile]);
 
   useEffect(async () => {
-    const profileConfigFileName = storedRecipeData && storedRecipeData.recipeFile
-    ? storedRecipeData.recipeFile
-    : 'simple-five-stage.config.js';
+    const profileConfigFileName =
+      storedRecipeData && storedRecipeData.recipeFile
+        ? storedRecipeData.recipeFile
+        : "simple-five-stage.config.js";
 
     console.log("profileConfigFileName", profileConfigFileName);
-    const profileConfigData = await import(`../profiles/${profileConfigFileName}`);
+    const profileConfigData = await import(
+      `../profiles/${profileConfigFileName}`
+    );
     const data = profileConfigData.default;
     data.configFile = profileConfigFileName;
 
@@ -88,17 +92,12 @@ export default function Profiler({
     setProfile(profileClass);
     setProfileTotalMs(profileClass.getTotalMs());
     setRecipeChartData(profileClass.getRecipeTimeSeriesData());
-    
   }, []);
 
   // pressure is the pressure sensor reading in bars from the com-gnd pressure sensor module hardware
   // value is a float between 0.0 and 10.0 (bars)
-  let [
-    pressure,
-    pressureTimeStamp,
-    readPressure,
-    setPressure,
-  ] = useComGndModule(comGndBtDevice, "pressureSensor", true, false, true);
+  let [pressure, pressureTimeStamp, readPressure, setPressure] =
+    useComGndModule(comGndBtDevice, "pressureSensor", true, false, true);
 
   // pressureTarget is the target pressure according to the com-gnd hardware
   // this value can be controlled by this app or external hardware (ie, the rotary encoder module)
@@ -112,30 +111,34 @@ export default function Profiler({
 
   // The value of the power level set on the com-gnd hardware pump control module
   // value is a float between 0.0 and 1.0
-  let [
-    pumpLevel,
-    pumpLevelTimeStamp,
-    readPumpLevel,
-    setPumpLevel,
-  ] = useComGndModule(comGndBtDevice, "pumpLevel", true, false, true);
+  let [pumpLevel, pumpLevelTimeStamp, readPumpLevel, setPumpLevel] =
+    useComGndModule(comGndBtDevice, "pumpLevel", true, false, true);
 
   // The value of the boiler external temperature
   // value is a float in Celsius
-  let [
-    boilerTemperature,
-    boilerTemperatureTimeStamp,
-    readBoilerTemperature,
-    setBoilerTemperature,
-  ] = useComGndModule(comGndBtDevice, "boilerTemperature", true, false, false);
+  // let [
+  //   boilerTemperature,
+  //   boilerTemperatureTimeStamp,
+  //   readBoilerTemperature,
+  //   setBoilerTemperature,
+  // ] = useComGndModule(comGndBtDevice, "boilerTemperature", true, false, false);
+  const boilerTemperature = 10;
+
+  const handleTempChange = (buffer) => {
+    console.log("new temp buffer", buffer);
+  };
+
+  let [temperatureBuffer, setTemperMonitorState] = useComGndBtModuleMonitor(
+    comGndBtDevice,
+    "boilerTemperature",
+    handleTempChange,
+    startTime
+  );
 
   // The value of the pump in-flow rate
   // value is a float in Celsius
-  let [
-    flowRate,
-    flowRateTimeStamp,
-    readFlowRate,
-    setFlowRate,
-  ] = useComGndModule(comGndBtDevice, "flowRate", true, false, false);
+  let [flowRate, flowRateTimeStamp, readFlowRate, setFlowRate] =
+    useComGndModule(comGndBtDevice, "flowRate", true, false, false);
 
   // The state value for the manual pressure control slider UI
   // value is an integer between 0 and 1000. It needs to scaled to 0 to 10 to set the pressureTarget
@@ -156,7 +159,7 @@ export default function Profiler({
   //console.log('pumpLevel init', pumpLevel);
   const handleRecipeEditorChange = (newRecipeData) => {
     console.log("handleRecipeEditorChange", newRecipeData);
-    if(profileRef.current) {
+    if (profileRef.current) {
       profileRef.current.setParameters(newRecipeData);
       const newChartData = profileRef.current.getRecipeTimeSeriesData();
       setRecipeChartData(newChartData);
@@ -187,13 +190,14 @@ export default function Profiler({
   // TODO: This only runs when the sensor value changes, but we want the graph
   // to update a minimal interval anyway. May need to add a timeout event?
   useEffect(async () => {
-    readBoilerTemperature();
+    // readBoilerTemperature();
     readFlowRate();
 
     if (debugBt || (!(pumpLevel === null || pumpLevel === -1) && pressure)) {
       const now = Date.now();
       let offset = startTime;
       if (startTime === 0) {
+        setTemperMonitorState('start');
         setStartTime(now);
         offset = now;
       }
@@ -323,6 +327,7 @@ export default function Profiler({
         <Chart
           sensorDataHistory={sensorDataHistory}
           profileDataHistory={profileDataHistory}
+          temperatureDataHistory={temperatureBuffer}
           timeDomain={profileTotalMs}
           recipeData={recipeChartData}
           pressureTarget={isConnected ? pressureTarget : null}

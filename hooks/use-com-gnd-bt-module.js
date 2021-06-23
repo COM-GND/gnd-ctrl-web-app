@@ -49,7 +49,7 @@ export default function useComGndModule(
       value = Math.round(value * 100) / 100;
     }
 
-    if(sensorName == "flowRate") {
+    if (sensorName == "flowRate") {
       // console.log('flow ', buffer, value);
     }
     return value;
@@ -72,16 +72,25 @@ export default function useComGndModule(
         const value = await btCharacteristic.readValue();
 
         const floatValue = getFloatValue(value.buffer);
+
+        const timeStamp = Date.now();
         setSensorValue(floatValue);
+        setTimeStamp(timeStamp);
 
         gattActionIsInProgress.current = false;
+
+        if (sensorName == "boilerTemperature") {
+          const debug = true;
+          console.log("update temp", floatValue);
+        }
+
         return floatValue;
       } catch (error) {
         console.error("readValue", sensorName, error);
         gattActionIsInProgress.current = false;
       }
     } else if (gattActionIsInProgress.current) {
-      // console.log('gattInProgress');
+      //console.log('inProgess', sensorName, gattActionIsInProgress.current);
     }
   };
 

@@ -2,6 +2,8 @@ import dynamic from "next/dynamic";
 import { useState, useEffect, useRef } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { Box, Button, Grid, Text, Layer, Anchor, Collapsible } from "grommet";
+import { useSwipeable } from "react-swipeable";
+import Swipeable from "./swipeable";
 import useLocalStorage from "../hooks/use-local-storage";
 import Chart from "../components/chart";
 // import profile from "../profiles/time-and-pressure.profiler";
@@ -12,6 +14,18 @@ export default function ProfileBrowser({
 }) {
   const [profilesData, setProfilesData] = useState();
   const [maxTimeDomain, setMaxTimeDomain] = useState(0);
+  const [swipedProfileIndex, setSwipedProfileIndex] = useState(-1);
+
+  const swipeHandlers = useSwipeable({
+    onSwipedLeft: (e) => {
+      console.log("swipeLeft", e);
+    },
+    onSwipeStart: (e) => {
+      setIsSwiping();
+    },
+    preventDefaultTouchmoveEvent: true,
+    trackMouse: true,
+  });
 
   useEffect(async () => {
     const getAllProfiles = async () => {
@@ -41,32 +55,39 @@ export default function ProfileBrowser({
     console.log("profileClass", profileClass);
 
     let maxTime = 0;
-    profileList = profileList.map((profileData) => {
-      console.log("profileData", profileData);
-      const previewData = profileClass.recipeToTimeSeriesData(profileData);
-      const newProfileData = Object.assign(profileData, {
-        previewData: previewData,
+    profileList = profileList
+      .map((profileData) => {
+        console.log("profileData", profileData);
+        const previewData = profileClass.recipeToTimeSeriesData(profileData);
+        const newProfileData = Object.assign(profileData, {
+          previewData: previewData,
+        });
+        if (
+          (previewData.length > 0) &
+          (previewData[previewData.length - 1].t > maxTime)
+        ) {
+          maxTime = previewData[previewData.length - 1].t;
+        }
+        return newProfileData;
+      })
+      .sort((a, b) => {
+        const nameA = a?.recipeName.toLowerCase();
+        const nameB = b?.recipeName.toLowerCase();
+        if (nameA < nameB) {
+          return -1;
+        }
+        if (nameA > nameB) {
+          return 1;
+        }
+        return 0;
       });
-      if(previewData.length > 0 & previewData[previewData.length-1].t > maxTime){
-        maxTime =  previewData[previewData.length-1].t;
-      }
-      return newProfileData;
-    }).sort((a, b) => {
-      const nameA = a?.recipeName.toLowerCase();
-      const nameB = b?.recipeName.toLowerCase();
-      if (nameA < nameB) {
-        return -1;
-      }
-      if (nameA > nameB) {
-        return 1;
-      }
-      return 0;
-    });
 
-    // For better comparison, we want all the charts to share the same time-domain 
+    // For better comparison, we want all the charts to share the same time-domain
     setMaxTimeDomain(maxTime);
     setProfilesData(profileList);
   }, []);
+
+  const handleDeleteProfile = (profileData) => {};
 
   //   profile.setParameters(profileList['Pressure Profile - 5 Stage'][0]);
   console.log("profilesData", profilesData);
@@ -85,31 +106,66 @@ export default function ProfileBrowser({
             //const data = profilesData[profileName];
             console.log("data", data);
             return (
-              <Button
-                style={{display: "block",  width:"100%",  height:"100%"}}
-               
-                key={`profile_${i}`}
-                onClick={() => {
-                  onOpen(data);
+              <Swipeable
+                onSwipedLeft={(e) => {
+                  console.log("swiped", i, e);
+                  setSwipedProfileIndex(i);
                 }}
+                onSwiped={(e) => console.log("swiped", e)}
+                key={`profile_${i}`}
               >
-                <Box
-                  height="100%"
-                  width="100%"
-                  background="dark-1"
-                  pad="small"
-                  overflow="hidden"
-                  justify="between"
-                >
-                  <Box>
-                    <Text size="small"> {data.recipeName}</Text>
-                    <Text size="xsmall">{data.profileName}</Text>
+                <Box direction="row" justify="stretch">
+                  <Box flex={true}>
+                    <Button
+                      style={{
+                        display: "block",
+                        height: "100%",
+                      }}
+
+                      onClick={() => {
+                        onOpen(data);
+                      }}
+                    >
+                      <Box
+                        height="100%"
+                        width="100%"
+                        background="dark-1"
+                        pad="small"
+                        overflow="hidden"
+                        justify="between"
+                      >
+                        <Box>
+                          <Text size="small"> {data.recipeName}</Text>
+                          <Text size="xsmall">{data.profileName}</Text>
+                        </Box>
+                        <Box height="120px">
+                          <Chart
+                            recipeData={data.previewData}
+                            zoom="fit"
+                            timeDomain={maxTimeDomain}
+                          />
+                        </Box>
+                      </Box>
+                    </Button>
                   </Box>
-                  <Box height="120px">
-                  <Chart recipeData={data.previewData} zoom="fit" timeDomain={maxTimeDomain}/>
-                  </Box>
+                  <Collapsible
+                    open={swipedProfileIndex === i}
+                    direction="horizontal"
+                  >
+                    <Box
+                      background="red"
+                      fill={true}
+                      flex={true}
+                      align="center"
+                      alignContent="center"
+                      pad="small"
+                      justify="center"
+                    >
+                      <Button>Delete</Button>
+                    </Box>
+                  </Collapsible>
                 </Box>
-              </Button>
+              </Swipeable>
             );
           })}
         <Button
