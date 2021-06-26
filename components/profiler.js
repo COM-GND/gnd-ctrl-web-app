@@ -60,6 +60,8 @@ export default function Profiler({
     { bars: 0, t: 0 },
   ]);
 
+  const [temperatureHistory, updateTemperatureHistory] = useState([]);
+
   const [editorIsOpen, setEditorIsOpen] = useState(false);
   const isConnected = useComGndBtIsConnected(comGndBtDevice);
 
@@ -122,17 +124,26 @@ export default function Profiler({
   //   readBoilerTemperature,
   //   setBoilerTemperature,
   // ] = useComGndModule(comGndBtDevice, "boilerTemperature", true, false, false);
-  const boilerTemperature = 10;
+  //const boilerTemperature = 10;
 
-  const handleTempChange = (buffer) => {
-    console.log("new temp buffer", buffer);
+  const [boilerTemperature, setBoilerTemperature] = useState(10);
+
+  const handleTempChange = (value) => {
+    console.log("new temperture", value);
+    if(value) {
+      setBoilerTemperature(value);
+      updateTemperatureHistory((buffer) => {
+        const timeStamp = Date.now() - startTime;
+        const newBuffer = buffer.concat([{c: value / 10.0, t:timeStamp}]);
+        return newBuffer;
+      })
+    }
   };
 
-  let [temperatureBuffer, setTemperMonitorState] = useComGndBtModuleMonitor(
+  useComGndBtModuleMonitor(
     comGndBtDevice,
     "boilerTemperature",
     handleTempChange,
-    startTime
   );
 
   // The value of the pump in-flow rate
@@ -197,7 +208,6 @@ export default function Profiler({
       const now = Date.now();
       let offset = startTime;
       if (startTime === 0) {
-        setTemperMonitorState('start');
         setStartTime(now);
         offset = now;
       }
@@ -327,7 +337,7 @@ export default function Profiler({
         <Chart
           sensorDataHistory={sensorDataHistory}
           profileDataHistory={profileDataHistory}
-          temperatureDataHistory={temperatureBuffer}
+          temperatureDataHistory={temperatureHistory}
           timeDomain={profileTotalMs}
           recipeData={recipeChartData}
           pressureTarget={isConnected ? pressureTarget : null}

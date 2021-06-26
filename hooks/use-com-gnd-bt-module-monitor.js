@@ -9,7 +9,6 @@ export default function useComGndBtModuleMonitor(
   btDevice,
   sensorName,
   onChange = () => {},
-  startTime = 0,
   interval = 250
 ) {
   const [value, timeStamp, readValue, setValue] = useComGndBtModule(
@@ -20,9 +19,6 @@ export default function useComGndBtModuleMonitor(
     false
   );
 
-  const [isActive, setIsActive] = useState(false);
-  const buffer = useRef([]);
-
   const readValueRef = useRef(readValue);
 
   useEffect(() => {
@@ -30,44 +26,24 @@ export default function useComGndBtModuleMonitor(
       const result = await readValueRef.current();
     };
 
-    let callbackId = false;
+    let callbackId = window.setInterval(handleTick, interval);
 
-    if(isActive) {
-      callbackId = window.setInterval(handleTick, interval);
-    } else if(callbackId) {
-      clearInterval(callbackId);
-    }
-    
     return () => {
       console.log("clearInterval");
       clearInterval(callbackId);
     };
-  }, [isActive]);
+  }, []);
 
   useEffect(() => {
     readValueRef.current = readValue;
   }, [readValue]);
 
   useEffect(() => {
-    if (value !== null && timeStamp !== null) {
-      const lastTime =
-        buffer.current.length > 1
-          ? buffer.current[buffer.current.length - 1].t
-          : 0;
-      const currTime = timeStamp - startTime;
-      if(lastTime !== currTime ) {
-        buffer.current.push({ value: value / 10.0, t: currTime });
-        onChange(buffer);  
-      }
+    if(value) {
+      onChange(value);
+    } else {
+      onChange(null);
     }
-  }, [value, timeStamp, onChange, startTime]);
+  }, [value]);
 
-  const setMonitorState = (monitorState) => {
-    if(monitorState === 'start') {
-      setIsActive(true);
-    } else if (monitorState === 'stop') {
-      setIsActive(false);
-    }
-  }
-  return [buffer.current, setMonitorState];
 }

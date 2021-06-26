@@ -294,7 +294,7 @@ export default function Chart({
             isAnimationActive={false}
             name="Boiler Temperature"
             id="boiler-temp"
-            dataKey="value"
+            dataKey="c"
             data={temperatureDataHistory}
             stroke="red"
             dot={false}
