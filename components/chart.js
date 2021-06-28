@@ -20,7 +20,7 @@ export default function Chart({
   sensorDataHistory,
   profileDataHistory,
   temperatureDataHistory,
-  pumpDataHistory,
+  flowDataHistory,
   recipeData,
   timeDomain = 60000,
   pressureTarget,
@@ -301,13 +301,13 @@ export default function Chart({
           />
         )}
 
-        {filteredSensorDataHistory && (
+        {flowDataHistory && (
           <Line
             isAnimationActive={false}
             name="Flow Rate"
             id="flow"
             dataKey="flow"
-            data={filteredSensorDataHistory}
+            data={flowDataHistory}
             stroke="hsla(0, 0%, 50%, 1)"
             dot={false}
           />

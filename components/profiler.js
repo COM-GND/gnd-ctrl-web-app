@@ -61,6 +61,7 @@ export default function Profiler({
   ]);
 
   const [temperatureHistory, updateTemperatureHistory] = useState([]);
+  const [flowDataHistory, updateflowDataHistory] = useState([]);
 
   const [editorIsOpen, setEditorIsOpen] = useState(false);
   const isConnected = useComGndBtIsConnected(comGndBtDevice);
@@ -126,7 +127,7 @@ export default function Profiler({
   // ] = useComGndModule(comGndBtDevice, "boilerTemperature", true, false, false);
   //const boilerTemperature = 10;
 
-  const [boilerTemperature, setBoilerTemperature] = useState(10);
+  const [boilerTemperature, setBoilerTemperature] = useState(0);
 
   const handleTempChange = (value) => {
     console.log("new temperture", value);
@@ -144,12 +145,35 @@ export default function Profiler({
     comGndBtDevice,
     "boilerTemperature",
     handleTempChange,
+    100
   );
 
   // The value of the pump in-flow rate
   // value is a float in Celsius
-  let [flowRate, flowRateTimeStamp, readFlowRate, setFlowRate] =
-    useComGndModule(comGndBtDevice, "flowRate", true, false, false);
+  // let [flowRate, flowRateTimeStamp, readFlowRate, setFlowRate] =
+  //   useComGndModule(comGndBtDevice, "flowRate", true, false, false);
+
+  const [flowRate, setFlowRate] = useState(0);
+
+  const handleFlowChange = (value) => {
+    console.log("new temperture", value);
+    if(value) {
+      const scaledValue = (value / 500) * 10;
+      setFlowRate(value);
+      updateflowDataHistory((buffer) => {
+        const timeStamp = Date.now() - startTime;
+        const newBuffer = buffer.concat([{"flow": scaledValue, t:timeStamp}]);
+        return newBuffer;
+      })
+    }
+  };
+
+  useComGndBtModuleMonitor(
+    comGndBtDevice,
+    "flowRate",
+    handleFlowChange,
+    100
+  );
 
   // The state value for the manual pressure control slider UI
   // value is an integer between 0 and 1000. It needs to scaled to 0 to 10 to set the pressureTarget
@@ -202,7 +226,7 @@ export default function Profiler({
   // to update a minimal interval anyway. May need to add a timeout event?
   useEffect(async () => {
     // readBoilerTemperature();
-    readFlowRate();
+    // readFlowRate();
 
     if (debugBt || (!(pumpLevel === null || pumpLevel === -1) && pressure)) {
       const now = Date.now();
@@ -221,8 +245,8 @@ export default function Profiler({
             t: t,
             bars: pressure,
             pump: pumpLevel > 0 ? pumpLevel * 10 : 0,
-            flow: flowRate > 0 ? (flowRate / 500.0) * 10 : 0,
-            c: boilerTemperature / 10,
+            // flow: flowRate > 0 ? (flowRate / 500.0) * 10 : 0,
+            // c: boilerTemperature / 10,
           },
         ]; /*.filter((datum) => datum.t > t - profileTotalMs)*/
         return newSensorDataHistory;
@@ -338,6 +362,7 @@ export default function Profiler({
           sensorDataHistory={sensorDataHistory}
           profileDataHistory={profileDataHistory}
           temperatureDataHistory={temperatureHistory}
+          flowDataHistory={flowDataHistory}
           timeDomain={profileTotalMs}
           recipeData={recipeChartData}
           pressureTarget={isConnected ? pressureTarget : null}
