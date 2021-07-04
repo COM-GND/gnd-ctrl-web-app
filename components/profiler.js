@@ -1,5 +1,5 @@
 import dynamic from "next/dynamic";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useContext } from "react";
 import { Box, Button, Grid, Text, Layer, Anchor, Collapsible } from "grommet";
 import useComGndBtIsConnected from "../hooks/use-com-gnd-bt-is-connected";
 import ProfileRunner from "./profile-runner.js";
@@ -14,6 +14,7 @@ import Slider, { Range } from "rc-slider";
 import Tune from "../svgs/tune-24px.svg";
 import "rc-slider/assets/index.css";
 import useLocalStorage from "../hooks/use-local-storage";
+import {StorageContext} from "../contexts/storage-context";
 
 const Chart = dynamic(() => import("../components/chart"), { ssr: false });
 // const timeAndPressureProfile = new timeAndPressure(fiveStagePressureProfile);
@@ -36,14 +37,21 @@ export default function Profiler({
 
   // console.log('Profiler for', recipeId);
   // see if custom recipe has been saved to local storage and load it.
-  const [storedRecipeData, setStoredRecipeData] = useLocalStorage(
-    `${recipeId}:recipe`,
-    null
-  );
-  const [storedHistoryData, setStoredHistoryData] = useLocalStorage(
-    `${recipeId}:history:${new Date().toISOString()}`,
-    null
-  );
+
+  const storageContext = useContext(StorageContext);
+
+  const storedRecipeData = storageContext.getValue(`${recipeId}:recipe`);
+
+  // const [storedRecipeData, setStoredRecipeData] = useLocalStorage(
+  //   `${recipeId}:recipe`,
+  //   null
+  // );
+  // const [storedHistoryData, setStoredHistoryData] = useLocalStorage(
+  //   `${recipeId}:history:${new Date().toISOString()}`,
+  //   null
+  // );
+
+  const historyStorageKey =  `${recipeId}:history:${new Date().toISOString()}`;
 
   const [profile, _setProfile] = useState();
   const profileRef = useRef(profile);
@@ -559,7 +567,8 @@ export default function Profiler({
                     sensorData: sensorDataHistory,
                     recipeData: recipeChartData,
                   };
-                  setStoredHistoryData(saveData);
+                  storageContext.setValue(historyStorageKey, saveData);
+                  // setStoredHistoryData(saveData);
                   setShowSaveHistory(false);
                 }}
               />

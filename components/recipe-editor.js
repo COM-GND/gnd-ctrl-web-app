@@ -1,11 +1,13 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useContext } from "react";
 import { Box, Select, Text, Heading, RangeInput, TextInput } from "grommet";
 import { v4 as uuidv4 } from "uuid";
+
+import {StorageContext} from "../contexts/storage-context";
 
 // NOTE: Using localStorge for easier migration to expo if a native app is ever attempted
 // Expo / React Native uses localStorage for web support of AsyncStorage api
 // localForage could be a compromise if localStorage becomes a performance issue
-import useLocalStorage from "../hooks/use-local-storage";
+// import useLocalStorage from "../hooks/use-local-storage";
 
 const configs = [];
 const profilers = [];
@@ -51,18 +53,23 @@ export default function RecipeEditor({ defaultProfileConfig, onChange, recipeId 
     modified: new Date(),
   };
 
-  //const defaultRecipe = Object.assign(defaultRecipeProperties, defaultProfileConfig);
+  const storageContext = useContext(StorageContext);
+  
+  const defaultRecipe = Object.assign(defaultRecipeProperties, defaultProfileConfig);
 
-  const [recipeData, _setRecipeData] = useLocalStorage(
-    localStorageKey,
-    Object.assign(defaultRecipeProperties, defaultProfileConfig)
-  );
+  // const [recipeData, _setRecipeData] = useLocalStorage(
+  //   localStorageKey,
+  //   Object.assign(defaultRecipeProperties, defaultProfileConfig)
+  // );
+
+  const recipeData = storageContext.getValue(localStorageKey) || defaultRecipe;
 
   const recipeDataRef = useRef(recipeData);
 
   const setRecipeData = (recipeData) => {
     recipeDataRef.current = recipeData;
-    _setRecipeData(recipeData);
+    storageContext.setValue(localStorageKey, recipeData);
+    //_setRecipeData(recipeData);
   }
 
   useEffect(() => {
@@ -142,16 +149,16 @@ export default function RecipeEditor({ defaultProfileConfig, onChange, recipeId 
         margin={{ vertical: "xsmall" }}
         color={{ dark: "light-1" }}
       >
-        {recipeData.profileName}
+        {recipeData && recipeData.profileName}
       </Heading>
       <Box pad={{ vertical: "medium" }}>
         <TextInput
           onChange={handleRecipeNameChange}
           placeholder="Recipe name"
-          value={recipeData.recipeName}
+          value={recipeData?.recipeName}
         ></TextInput>
       </Box>
-      {recipeData.stages.map((stage, i) => (
+      {recipeData && recipeData.stages.map((stage, i) => (
         <Box
           key={`profile_stage_${i}`}
           flex={false}

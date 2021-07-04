@@ -26,11 +26,13 @@ export default class profile {
    * Constructor
    * @param {Recipe} recipe
    */
-  constructor(config) {
+  constructor(config = []) {
     console.log('new profile', config, config.profileName);
     this.onRecipeChangeCallback = () => {};
 
     this.setParameters(config);
+
+
   }
 
 
@@ -68,6 +70,10 @@ export default class profile {
     let timeAcc = 0;
     let currPressure = 0;
     
+    if(!this.parameters?.stages) {
+      return [];
+    }
+
     const timeSeriesData = this.parameters.stages.map((stage) => {
       const t = timeAcc;
       const value = 'value' in stage.time ? stage.time.value : stage.time.defaultValue;

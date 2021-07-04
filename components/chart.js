@@ -21,7 +21,7 @@ export default function Chart({
   profileDataHistory,
   temperatureDataHistory,
   flowDataHistory,
-  recipeData,
+  recipeData = [],
   timeDomain = 60000,
   pressureTarget,
   zoom = 1,
@@ -58,7 +58,7 @@ export default function Chart({
   const tMax = Math.round(
     Math.max(
       xMax,
-      recipeData && recipeData.length > 0
+      recipeData && recipeData.length > 1
         ? recipeData[recipeData.length - 1].t
         : 0,
       width / pxPerMs
@@ -107,7 +107,7 @@ export default function Chart({
   // }
 
   // if the sensorData time goes past the end of the recipe, extend the recipe's last pressure out
-  if (recipeData && recipeData[recipeData.length - 1].t < xMax) {
+  if (recipeData.length > 1 && recipeData[recipeData.length - 1].t < xMax) {
     //recipeData.push({ t: xMax, bars: recipeData[recipeData.length - 1].bars });
   }
 

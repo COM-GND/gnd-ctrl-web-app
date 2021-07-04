@@ -1,10 +1,12 @@
 import dynamic from "next/dynamic";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useContext } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { Box, Button, Grid, Text, Layer, Anchor, Collapsible } from "grommet";
 import { useSwipeable } from "react-swipeable";
 import Swipeable from "./swipeable";
-import useLocalStorage from "../hooks/use-local-storage";
+// import useLocalStorage from "../hooks/use-local-storage";
+import {StorageContext} from "../contexts/storage-context";
+
 import Chart from "../components/chart";
 // import profile from "../profiles/time-and-pressure.profiler";
 
@@ -27,23 +29,31 @@ export default function ProfileBrowser({
     trackMouse: true,
   });
 
+  const storageContext = useContext(StorageContext);
+
   useEffect(async () => {
     const getAllProfiles = async () => {
       let items = [];
-      if (global.window) {
-        for (let itemKey in { ...localStorage }) {
-          console.log("found item", itemKey);
-          if (itemKey.includes(":recipe")) {
-            const recipe = JSON.parse(localStorage.getItem(itemKey));
-            const profileName = recipe.profileName;
-            // if (!items[profileName]) {
-            //   items[profileName] = [];
-            // }
-            // items[profileName].push(recipe);
-            items.push(recipe);
-          }
+      await storageContext.store.forEach((value, key, index) => {
+        console.log("found item", key);
+        if (key.includes(":recipe")) {
+          console.log("adding item", key);
+          items.push(value);
         }
-      }
+      });
+      // for (let itemKey in { ...localStorage }) {
+      //   console.log("found item", itemKey);
+      //   if (itemKey.includes(":recipe")) {
+      //     const recipe = JSON.parse(localStorage.getItem(itemKey));
+      //     const profileName = recipe.profileName;
+      //     // if (!items[profileName]) {
+      //     //   items[profileName] = [];
+      //     // }
+      //     // items[profileName].push(recipe);
+      //     items.push(recipe);
+      //   }
+      // }
+
       console.log("items", items);
       return items;
     };
@@ -85,7 +95,7 @@ export default function ProfileBrowser({
     // For better comparison, we want all the charts to share the same time-domain
     setMaxTimeDomain(maxTime);
     setProfilesData(profileList);
-  }, []);
+  }, [storageContext]);
 
   const handleDeleteProfile = (profileData) => {};
 
@@ -121,7 +131,6 @@ export default function ProfileBrowser({
                         display: "block",
                         height: "100%",
                       }}
-
                       onClick={() => {
                         onOpen(data);
                       }}
