@@ -35,7 +35,7 @@ export default function Chart({
       ? sensorDataHistory[sensorDataHistory.length - 1].t
       : 0;
 
-  const xMax = Math.max(mostRecentSensorT, timeDomain);
+  const xMax = Math.max(mostRecentSensorT, timeDomain, 1);
   const pxPerMs = (() => {
     if (zoom === "fit") {
       if (xMax / 1000 > width) {
@@ -54,7 +54,8 @@ export default function Chart({
   //zoom == 'fit' ? width / (xMax)  : 0.025 * zoom;
 
   const tMin = 0;
-  // max Time is the large of the sensorData max t, the recipeData max t, the timeDomain, or the available space in the window.
+  // max Time is the larger of the sensorData max t, the recipeData max t, the timeDomain,
+  // or the available space in the window.
   const tMax = Math.round(
     Math.max(
       xMax,
@@ -169,7 +170,7 @@ export default function Chart({
         fill="#666"
         style={{ fontSize: "10px" }}
       >
-        {payload.value / 1000}
+        {Math.round(payload.value / 1000)}
       </text>
     </g>
   );

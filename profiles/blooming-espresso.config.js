@@ -1,6 +1,6 @@
 const pressureProfile = {
   profileName: "Blooming Espresso",
-  profilerId: "time-and-pressue",
+  profilerId: "time-and-pressure",
   profilerFile: "time-and-pressure.profiler.js",
   stages: [
     {

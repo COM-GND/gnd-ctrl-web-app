@@ -27,7 +27,7 @@ export default function ProfileRunner({
   const setProfile = (newProfile) => {
     profileRef.current = newProfile;
     _setProfile(newProfile);
-  }
+  };
 
   const [runState, _setRunState] = useState("stop");
   const runStateRef = useRef(runState);
@@ -63,7 +63,7 @@ export default function ProfileRunner({
     // );
     if (runStateRef.current === "play" && pumpLevelRef.current !== -1) {
       setRunTime(runTimeRef.current + tickLength);
-      if(profileRef.current) {
+      if (profileRef.current) {
         if (runTimeRef.current < profileRef.current.getTotalMs()) {
           const state = profileRef.current.getStateAtTime(runTimeRef.current);
           console.log("state", state);
@@ -73,16 +73,20 @@ export default function ProfileRunner({
           // onStop();
         }
       } else {
-        console.warn('Profile not loaded', profileInstance, profile, profileRef.current);
+        console.warn(
+          "Profile not loaded",
+          profileInstance,
+          profile,
+          profileRef.current
+        );
       }
-    
     } else if (
       runTimeRef.current > 0 &&
       (runStateRef.current === "play" || runStateRef.current === "pause") &&
-      (pumpLevelRef.current === -1)
+      pumpLevelRef.current === -1
     ) {
       //if the pump power is turned off while in play state, switch to stop state
-      console.log('profile-runner stop', pumpLevelRef.current);
+      console.log("profile-runner stop", pumpLevelRef.current);
       setRunState("stop");
       setRunTime(0);
       onStop();
@@ -102,7 +106,7 @@ export default function ProfileRunner({
   }, [pumpLevel]);
 
   useEffect(() => {
-    console.log('profile updateed', profileInstance);
+    console.log("profile updated", profileInstance);
     setProfile(profileInstance);
   }, [profileInstance]);
 
@@ -158,7 +162,7 @@ export default function ProfileRunner({
         }
       />
       <Button
-      size="small"
+        size="small"
         disabled={runState === "stop" || disabled}
         onClick={() => {
           setRunState("stop");

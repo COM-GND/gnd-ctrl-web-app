@@ -17,7 +17,10 @@ import {
   Heading,
 } from "grommet";
 import { deepMerge } from "grommet/utils";
-import {StorageContext, StorageContextProvider} from "../contexts/storage-context";
+import {
+  StorageContext,
+  StorageContextProvider,
+} from "../contexts/storage-context";
 import BluetoothConnectButton from "../components/bluetooth-connect-button";
 import useComGndBtIsConnected from "../hooks/use-com-gnd-bt-is-connected";
 import Profiler from "../components/profiler";
@@ -27,8 +30,6 @@ import requestWakeLock from "../utils/wake-lock";
 import comGndConfig from "../device-configs/com-gnd-default-config";
 
 const theme = deepMerge(grommet, gndCtrlTheme);
-
-
 
 // https://googlechrome.github.io/samples/web-bluetooth/discover-services-and-characteristics.html
 
@@ -60,7 +61,6 @@ export default function Home() {
     setComGndBtService(undefined);
     setComGndBtPressureCharacteristic(undefined);
   };
-
 
   return (
     <Grommet full theme={theme} themeMode="dark">
@@ -156,8 +156,10 @@ export default function Home() {
                 <ProfileBrowser
                   onOpen={(recipeData) => {
                     console.log("open", recipeData);
-                    setRecipeId(recipeData.id);
-                    setHeadingText(recipeData.recipeName);
+                    setRecipeId(recipeData?.id);
+                    setHeadingText(
+                      recipeData.recipeName || recipeData.profileName
+                    );
                     setView("profiler");
                   }}
                   onAdd={(id) => {

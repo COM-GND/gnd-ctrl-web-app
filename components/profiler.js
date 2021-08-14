@@ -14,12 +14,12 @@ import Slider, { Range } from "rc-slider";
 import Tune from "../svgs/tune-24px.svg";
 import "rc-slider/assets/index.css";
 import useLocalStorage from "../hooks/use-local-storage";
-import {StorageContext} from "../contexts/storage-context";
+import { StorageContext } from "../contexts/storage-context";
 
 const Chart = dynamic(() => import("../components/chart"), { ssr: false });
 // const timeAndPressureProfile = new timeAndPressure(fiveStagePressureProfile);
 
-const debugBt = true;
+const debugBt = false && process.env.NODE_ENV !== "production";
 
 export default function Profiler({
   comGndBtDevice,
@@ -35,23 +35,24 @@ export default function Profiler({
   const startTimeRef = useRef(startTime);
   const lastPressureReadTimeRef = useRef();
 
+  const [profileType, setProfileType] = useState(
+    recipeId ? "recipe" : "preset"
+  );
+
   // console.log('Profiler for', recipeId);
   // see if custom recipe has been saved to local storage and load it.
 
   const storageContext = useContext(StorageContext);
 
-  const storedRecipeData = storageContext.getValue(`${recipeId}:recipe`);
+  const storedRecipeData =
+    profileType === "recipe"
+      ? storageContext.getValue(`${recipeId}:recipe`)
+      : undefined;
 
-  // const [storedRecipeData, setStoredRecipeData] = useLocalStorage(
-  //   `${recipeId}:recipe`,
-  //   null
-  // );
-  // const [storedHistoryData, setStoredHistoryData] = useLocalStorage(
-  //   `${recipeId}:history:${new Date().toISOString()}`,
-  //   null
-  // );
-
-  const historyStorageKey =  `${recipeId}:history:${new Date().toISOString()}`;
+  const historyStorageKey =
+    profileType === "recipe"
+      ? `${recipeId}:history:${new Date().toISOString()}`
+      : undefined;
 
   const [profile, _setProfile] = useState();
   const profileRef = useRef(profile);
@@ -69,27 +70,24 @@ export default function Profiler({
   ]);
 
   const [temperatureHistory, updateTemperatureHistory] = useState([]);
-  const [flowDataHistory, updateflowDataHistory] = useState([]);
+  const [flowDataHistory, updateFlowDataHistory] = useState([]);
 
   const [editorIsOpen, setEditorIsOpen] = useState(false);
   const isConnected = useComGndBtIsConnected(comGndBtDevice);
 
   const [showSaveHistory, setShowSaveHistory] = useState(false);
 
-  // useEffect(() => {
-  //   console.log("profile?", profile);
-  //   if(!profile) {
-  //     return;
-  //   }
-  //   setProfileTotalMs(profile.getTotalMs());
-  //   setRecipeChartData(profile.getRecipeTimeSeriesData());
-  // }, [profile]);
-
   useEffect(async () => {
-    const profileConfigFileName =
-      storedRecipeData && storedRecipeData.recipeFile
-        ? storedRecipeData.recipeFile
-        : "simple-five-stage.config.js";
+    let profileConfigFileName;
+    if (profileType === "recipe") {
+      // profile config is saved in teh stored data
+      profileConfigFileName =
+        storedRecipeData && storedRecipeData.configFile
+          ? storedRecipeData.configFile
+          : "simple-five-stage.config.js";
+    } else {
+      // the config is loaded from the preset
+    }
 
     console.log("profileConfigFileName", profileConfigFileName);
     const profileConfigData = await import(
@@ -137,24 +135,23 @@ export default function Profiler({
 
   const [boilerTemperature, setBoilerTemperature] = useState(0);
 
-  const handleTempChange = (value) => {
-    console.log("new temperture", value);
-    if(value) {
-      setBoilerTemperature(value);
-      updateTemperatureHistory((buffer) => {
-        const timeStamp = Date.now() - startTime;
-        const newBuffer = buffer.concat([{c: value / 10.0, t:timeStamp}]);
-        return newBuffer;
-      })
-    }
-  };
-
-  useComGndBtModuleMonitor(
+  const rawTemp = useComGndBtModuleMonitor(
     comGndBtDevice,
     "boilerTemperature",
-    handleTempChange,
     100
   );
+
+  useEffect(() => {
+    const value = rawTemp || 0;
+    setBoilerTemperature(value);
+    if (isRunning) {
+      updateTemperatureHistory((buffer) => {
+        const timeStamp = Date.now() - startTime;
+        const newBuffer = buffer.concat([{ c: value / 10.0, t: timeStamp }]);
+        return newBuffer;
+      });
+    }
+  }, [rawTemp, isRunning, startTime]);
 
   // The value of the pump in-flow rate
   // value is a float in Celsius
@@ -163,25 +160,27 @@ export default function Profiler({
 
   const [flowRate, setFlowRate] = useState(0);
 
-  const handleFlowChange = (value) => {
-    console.log("new temperture", value);
-    if(value) {
-      const scaledValue = (value / 500) * 10;
-      setFlowRate(value);
-      updateflowDataHistory((buffer) => {
-        const timeStamp = Date.now() - startTime;
-        const newBuffer = buffer.concat([{"flow": scaledValue, t:timeStamp}]);
-        return newBuffer;
-      })
-    }
-  };
+  let rawFlowRate = useComGndBtModuleMonitor(comGndBtDevice, "flowRate", 100);
 
-  useComGndBtModuleMonitor(
-    comGndBtDevice,
-    "flowRate",
-    handleFlowChange,
-    100
-  );
+  useEffect(() => {
+    console.log("new rawFlowRate", rawFlowRate);
+    let value = rawFlowRate;
+    let scaledValue = 0;
+    let mlPerSec = 0;
+    if (value) {
+      // max val us 500 ml per min = 8.33 ml / s
+      mlPerSec = value / 60.0;
+      scaledValue = (value / 500.0) * 10;
+    }
+    setFlowRate(mlPerSec);
+    if (isRunning) {
+      updateFlowDataHistory((buffer) => {
+        const timeStamp = Date.now() - startTime;
+        const newBuffer = buffer.concat([{ flow: scaledValue, t: timeStamp }]);
+        return newBuffer;
+      });
+    }
+  }, [rawFlowRate, isRunning, startTime]);
 
   // The state value for the manual pressure control slider UI
   // value is an integer between 0 and 1000. It needs to scaled to 0 to 10 to set the pressureTarget
@@ -223,7 +222,7 @@ export default function Profiler({
   already emits onChange events and localStorage is sync. 
   */
   useEffect(() => {
-    console.log("loaded saved recipe", storedRecipeData);
+    console.log("Loaded. Saved recipe: ", storedRecipeData);
     if (storedRecipeData) {
       handleRecipeEditorChange(storedRecipeData);
     }
@@ -452,8 +451,12 @@ export default function Profiler({
               />
             }
           ></Button>
-          {boilerTemperature && <Text size="small">{boilerTemperature}°</Text>}
-          {flowRate && <Text size="small">{flowRate}°</Text>}
+          {boilerTemperature && (
+            <Box width="6ch">
+              <Text size="small">{boilerTemperature.toFixed(1)}°</Text>
+            </Box>
+          )}
+          <Text size="small">{flowRate.toFixed(2)} ml/s</Text>
         </Box>
 
         <Box flex={false} basis={"1/3"} justify="center">

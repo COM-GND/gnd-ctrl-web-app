@@ -8,7 +8,6 @@ import useComGndBtModule from "./use-com-gnd-bt-module";
 export default function useComGndBtModuleMonitor(
   btDevice,
   sensorName,
-  onChange = () => {},
   interval = 250
 ) {
   const [value, timeStamp, readValue, setValue] = useComGndBtModule(
@@ -38,12 +37,13 @@ export default function useComGndBtModuleMonitor(
     readValueRef.current = readValue;
   }, [readValue]);
 
-  useEffect(() => {
-    if(value) {
-      onChange(value);
-    } else {
-      onChange(null);
-    }
-  }, [value]);
+  // useEffect(() => {
+  //   if(value !== null && value !== false && false !== undefined) {
+  //     onChange(value);
+  //   } else {
+  //     onChange(null);
+  //   }
+  // }, [value]);
 
+  return value;
 }

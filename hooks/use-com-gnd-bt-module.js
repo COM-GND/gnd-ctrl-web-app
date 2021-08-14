@@ -45,12 +45,12 @@ export default function useComGndModule(
       console.error("Invalid float value in use-com-gnd-bt-module:", value);
       value = null;
     } else if (value > 0) {
-      // round to 2 deciman places
+      // round to 2 decimal places
       value = Math.round(value * 100) / 100;
     }
 
     if (sensorName == "flowRate") {
-      // console.log('flow ', buffer, value);
+      //  console.log('flow ', buffer, value);
     }
     return value;
   };
@@ -81,7 +81,7 @@ export default function useComGndModule(
 
         if (sensorName == "boilerTemperature") {
           const debug = true;
-          console.log("update temp", floatValue);
+          //console.log("update temp", floatValue);
         }
 
         return floatValue;
