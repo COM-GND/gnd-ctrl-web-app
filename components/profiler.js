@@ -19,12 +19,12 @@ import { StorageContext } from "../contexts/storage-context";
 const Chart = dynamic(() => import("../components/chart"), { ssr: false });
 // const timeAndPressureProfile = new timeAndPressure(fiveStagePressureProfile);
 
-const debugBt = false && process.env.NODE_ENV !== "production";
+const debugBt = true && process.env.NODE_ENV !== "production";
 
 export default function Profiler({
   comGndBtDevice,
   recipeId,
-  //   liveSensorData,
+  recipeData,
   onStart = () => {},
   onPause = () => {},
   onStop = () => {},
@@ -79,22 +79,23 @@ export default function Profiler({
 
   useEffect(async () => {
     let profileConfigFileName;
+    let profileConfigData;
+    let data;
     if (profileType === "recipe") {
-      // profile config is saved in teh stored data
+      // profile config is saved in the stored data
       profileConfigFileName =
         storedRecipeData && storedRecipeData.configFile
           ? storedRecipeData.configFile
           : "simple-five-stage.config.js";
+
+      console.log("profileConfigFileName", profileConfigFileName);
+      profileConfigData = await import(`../profiles/${profileConfigFileName}`);
+      data = profileConfigData.default;
+      data.configFile = profileConfigFileName;
     } else {
       // the config is loaded from the preset
+      data = recipeData;
     }
-
-    console.log("profileConfigFileName", profileConfigFileName);
-    const profileConfigData = await import(
-      `../profiles/${profileConfigFileName}`
-    );
-    const data = profileConfigData.default;
-    data.configFile = profileConfigFileName;
 
     console.log("profileConfigData", storedRecipeData, data);
     const profileClass = new timeAndPressure(storedRecipeData || data);
@@ -172,6 +173,7 @@ export default function Profiler({
       mlPerSec = value / 60.0;
       scaledValue = (value / 500.0) * 10;
     }
+    console.log("flow", mlPerSec);
     setFlowRate(mlPerSec);
     if (isRunning) {
       updateFlowDataHistory((buffer) => {
@@ -368,7 +370,7 @@ export default function Profiler({
         <Chart
           sensorDataHistory={sensorDataHistory}
           profileDataHistory={profileDataHistory}
-          temperatureDataHistory={temperatureHistory}
+          // temperatureDataHistory={temperatureHistory}
           flowDataHistory={flowDataHistory}
           timeDomain={profileTotalMs}
           recipeData={recipeChartData}
@@ -452,9 +454,11 @@ export default function Profiler({
             }
           ></Button>
           {boilerTemperature && (
-            <Box width="6ch">
-              <Text size="small">{boilerTemperature.toFixed(1)}°</Text>
-            </Box>
+            <Button>
+              <Box width="6ch">
+                <Text size="small">{boilerTemperature.toFixed(1)}°</Text>
+              </Box>
+            </Button>
           )}
           <Text size="small">{flowRate.toFixed(2)} ml/s</Text>
         </Box>

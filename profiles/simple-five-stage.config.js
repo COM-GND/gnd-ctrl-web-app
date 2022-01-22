@@ -2,9 +2,23 @@ const pressureProfile = {
   profileName: "Simple Five Stage",
   profilerId: "time-and-pressure",
   profilerFile: "time-and-pressure.profiler.js",
+  setup: {
+    name: "Setup",
+    temp: {
+      name: "Initial Temperature",
+      id: "setup-temperature",
+      type: "temperature",
+      min: 85,
+      max: 99,
+      defaultValue: 93.0,
+      units: "c",
+      control: "slider",
+    },
+  },
   stages: [
     {
       name: "Pre Infusion Ramp Up",
+      id: "pre-infusion-ramp-up",
       time: {
         name: "Time",
         id: "pre-infusion-time",
@@ -28,6 +42,7 @@ const pressureProfile = {
     },
     {
       name: "Pre Infusion",
+      id: "pre-infusion",
       time: {
         name: "Time",
         defaultValue: 5,
@@ -49,6 +64,7 @@ const pressureProfile = {
     },
     {
       name: "Ramp",
+      id: "ramp",
       time: {
         name: "Ramp-up Time",
         id: "pressure-ramp-up-time",
@@ -72,6 +88,7 @@ const pressureProfile = {
     },
     {
       name: "Infusion",
+      id: "infusion",
       time: {
         name: "Time",
         id: "infusion-time",

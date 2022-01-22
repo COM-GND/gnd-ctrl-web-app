@@ -2,6 +2,18 @@ const pressureProfile = {
   profileName: "Blooming Espresso",
   profilerId: "time-and-pressure",
   profilerFile: "time-and-pressure.profiler.js",
+  setup: {
+    temp: {
+      name: "Temperature",
+      id: "setup-temperature",
+      type: "temperature",
+      min: 85,
+      max: 99,
+      defaultValue: 93.0,
+      units: "c",
+      control: "slider",
+    },
+  },
   stages: [
     {
       name: "Pre Infusion Ramp Up",

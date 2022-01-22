@@ -92,7 +92,7 @@ export default function ProfileBrowser({
       let items = [];
       await storageContext.store.forEach((value, key, index) => {
         console.log("found item", key);
-        if (key.includes(":recipe")) {
+        if (key.includes(":recipe") && value) {
           console.log("adding item", key);
           items.push(value);
         }

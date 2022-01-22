@@ -3,6 +3,7 @@ import { Box, Select, Text, Heading, RangeInput, TextInput } from "grommet";
 import { v4 as uuidv4 } from "uuid";
 
 import { StorageContext } from "../contexts/storage-context";
+import RecipeEditorStage from "./recipe-editor-stage";
 
 // NOTE: Using localStorage for easier migration to expo if a native app is ever attempted
 // Expo / React Native uses localStorage for web support of AsyncStorage api
@@ -115,7 +116,13 @@ export default function RecipeEditor({
     const newRecipeData = Object.assign({}, recipeDataRef.current);
     newRecipeData.modified = new Date();
     //const newRecipeStages = recipeDataRef.current.stage.slice();
-    newRecipeData.stages[stageNum][paramKey].value = value;
+
+    if (stageNum === "setup") {
+      newRecipeData.setup[paramKey].value = value;
+    } else {
+      newRecipeData.stages[stageNum][paramKey].value = value;
+    }
+
     //setRecipeStages(newRecipeStages);
     //const newRecipeData = Object.assign({}, recipeData);
     //newRecipeData.stages = newRecipeStages;
@@ -130,7 +137,11 @@ export default function RecipeEditor({
       return;
     }
 
-    const profileStages = recipeDataRef.current.stages;
+    const profileStages =
+      stageNum === "setup"
+        ? recipeDataRef.current
+        : recipeDataRef.current.stages;
+
     if (!profileStages[stageNum]) {
       console.error(`Stage ${stageNum} does not exist in profile.`);
       return;
@@ -174,74 +185,23 @@ export default function RecipeEditor({
           value={recipeData?.recipeName}
         ></TextInput>
       </Box>
+      {recipeData && recipeData.setup && (
+        <RecipeEditorStage
+          stageData={recipeData.setup}
+          stageIndex={"setup"}
+          getStageParamValue={getStageParamValue}
+          setStageParamValue={setStageParamValue}
+        />
+      )}
       {recipeData &&
         recipeData.stages.map((stage, i) => (
-          <Box
+          <RecipeEditorStage
             key={`profile_stage_${i}`}
-            flex={false}
-            border="top"
-            pad={{ vertical: "small" }}
-          >
-            {Object.entries(stage).map(([key, val], j) => {
-              if (key === "name") {
-                return (
-                  <Text size="small" key={`profile_param_${j}`}>
-                    {val}
-                  </Text>
-                );
-              } else {
-                return (
-                  <Box
-                    key={`profile_param_${j}`}
-                    pad={{ vertical: "small" }}
-                    flex={false}
-                  >
-                    <Text size="small">
-                      {val.name}: {getStageParamValue(i, key)} {val.unit}
-                    </Text>
-                    {val.control === "slider" && (
-                      <Box
-                        direction="row"
-                        align="center"
-                        flex={false}
-                        gap="xxsmall"
-                      >
-                        <Box flex={false} justify="end">
-                          <Text size="xsmall">{val.min}</Text>
-                        </Box>
-                        <Box pad="small" justify="center" flex="grow">
-                          <RangeInput
-                            min={val.min}
-                            max={val.max}
-                            style={{ margin: "0" }}
-                            step={0.1}
-                            value={getStageParamValue(i, key)}
-                            onChange={(e) => {
-                              console.log(
-                                "editor change",
-                                i,
-                                key,
-                                e.target.value
-                              );
-                              setStageParamValue(
-                                i,
-                                key,
-                                Number(e.target.value)
-                              );
-                            }}
-                          />
-                        </Box>
-                        <Box flex={false}>
-                          {" "}
-                          <Text size="xsmall">{val.max}</Text>
-                        </Box>
-                      </Box>
-                    )}
-                  </Box>
-                );
-              }
-            })}
-          </Box>
+            stageData={stage}
+            stageIndex={i}
+            getStageParamValue={getStageParamValue}
+            setStageParamValue={setStageParamValue}
+          />
         ))}
     </Box>
   );

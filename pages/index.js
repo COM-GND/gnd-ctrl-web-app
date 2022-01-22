@@ -43,6 +43,7 @@ export default function Home() {
   };
 
   const [recipeId, setRecipeId] = useState();
+  const [recipeData, setRecipeData] = useState();
   const [headingText, setHeadingText] = useState("");
   const [isRunning, setIsRunning] = useState(false);
   const [sensorData, updateSensorData] = useState([{ bars: 0, t: 0 }]);
@@ -157,6 +158,7 @@ export default function Home() {
                   onOpen={(recipeData) => {
                     console.log("open", recipeData);
                     setRecipeId(recipeData?.id);
+                    setRecipeData(recipeData);
                     setHeadingText(
                       recipeData.recipeName || recipeData.profileName
                     );
@@ -176,7 +178,11 @@ export default function Home() {
                 fill={true}
                 key="profiler-container"
               >
-                <Profiler comGndBtDevice={comGndBtDevice} recipeId={recipeId} />
+                <Profiler
+                  comGndBtDevice={comGndBtDevice}
+                  recipeId={recipeId}
+                  recipeData={recipeData}
+                />
               </Box>
             )}
           </Box>
