@@ -151,6 +151,18 @@ export default class profile {
     return totalTime;
   }
 
+  getSetupTemperature() {
+    const recipeData = this.parameters;
+    if (recipeData?.setup && recipeData.setup?.temp) {
+      const value =
+        recipeData.setup.temp?.value || recipeData.setup.temp?.defaultValue;
+      if (!value) {
+        return null;
+      }
+
+      return value;
+    }
+  }
   /**
    * Get the target machine state at the given time (MS)
    * @param {int} t - time in miliseconds

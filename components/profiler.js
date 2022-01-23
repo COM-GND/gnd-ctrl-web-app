@@ -19,7 +19,7 @@ import { StorageContext } from "../contexts/storage-context";
 const Chart = dynamic(() => import("../components/chart"), { ssr: false });
 // const timeAndPressureProfile = new timeAndPressure(fiveStagePressureProfile);
 
-const debugBt = true && process.env.NODE_ENV !== "production";
+const debugBt = false && process.env.NODE_ENV !== "production";
 
 export default function Profiler({
   comGndBtDevice,
@@ -124,16 +124,6 @@ export default function Profiler({
   let [pumpLevel, pumpLevelTimeStamp, readPumpLevel, setPumpLevel] =
     useComGndModule(comGndBtDevice, "pumpLevel", true, false, true);
 
-  // The value of the boiler external temperature
-  // value is a float in Celsius
-  // let [
-  //   boilerTemperature,
-  //   boilerTemperatureTimeStamp,
-  //   readBoilerTemperature,
-  //   setBoilerTemperature,
-  // ] = useComGndModule(comGndBtDevice, "boilerTemperature", true, false, false);
-  //const boilerTemperature = 10;
-
   const [boilerTemperature, setBoilerTemperature] = useState(0);
 
   const rawTemp = useComGndBtModuleMonitor(
@@ -153,6 +143,13 @@ export default function Profiler({
       });
     }
   }, [rawTemp, isRunning, startTime]);
+
+  let [
+    temperatureTarget,
+    temperatureTargetTimeStamp,
+    readTemperatureTarget,
+    setTemperatureTarget,
+  ] = useComGndModule(comGndBtDevice, "temperatureTarget", true, true, true);
 
   // The value of the pump in-flow rate
   // value is a float in Celsius
@@ -208,6 +205,11 @@ export default function Profiler({
       const newChartData = profileRef.current.getRecipeTimeSeriesData();
       setRecipeChartData(newChartData);
       setProfileTotalMs(profileRef.current.getTotalMs());
+      const temp = profileRef.current.getSetupTemperature();
+      if (temp) {
+        console.log("set temp", temp);
+        setTemperatureTarget(temp);
+      }
     }
   };
 

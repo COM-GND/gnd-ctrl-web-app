@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useContext } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
 import { Box, Select, Text, Heading, RangeInput, TextInput } from "grommet";
 import { v4 as uuidv4 } from "uuid";
 
@@ -32,12 +32,8 @@ function importAll(r) {
 importAll(require.context("../profiles/", false, /\.js$/));
 console.log("all configs", configs);
 
-export default function RecipeEditor({
-  defaultProfileConfig,
-  onChange,
-  recipeId,
-}) {
-  console.log("RecipeEditor", defaultProfileConfig);
+function RecipeEditor({ defaultProfileConfig, onChange, recipeId }) {
+  // console.log("RecipeEditor", defaultProfileConfig);
 
   const [profileType, setProfileType] = useState(
     recipeId ? "recipe" : "preset"
@@ -206,3 +202,5 @@ export default function RecipeEditor({
     </Box>
   );
 }
+
+export default React.memo(RecipeEditor);

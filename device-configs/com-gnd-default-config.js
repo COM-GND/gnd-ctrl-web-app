@@ -1,54 +1,62 @@
-
 export default {
-    "name": "com-gnd-default",
-    "bluetooth": {
-        "serviceId": "8fc1ceca-b162-4401-9607-c8ac21383e4e",
-        "characteristics": {
-            "pressureSensor": {
-                "id": "c14f18ef-4797-439e-a54f-498ba680291d",
-                "type": "float",
-                "min": 0.0,
-                "max": 10.0,
-                "read": true,
-                "write": false,
-                "notify": true
-            },
-            "pressureTarget": {
-                "id": "34c242f1-8b5f-4d99-8238-4538eb0b5764",
-                "type": "float",
-                "min": 0.0,
-                "max": 10.0,
-                "read": true,
-                "write": true,
-                "notify": true
-            },
-            "pumpLevel": {
-                "id": "d8ad3645-50ad-4f7a-a79d-af0a59469455",
-                "type": "float",
-                "min": -1.0,
-                "max": 1.0,
-                "read": true,
-                "write": false,
-                "notify": true
-            },
-            "boilerTemperature": {
-                "id": 0x2A1C,
-                "type": "float",
-                "min": 0,
-                "max": 200,
-                "read": true,
-                "write": false,
-                "notify": false
-            },
-            "flowRate": {
-                "id": 'f5ec47c3-b240-49e8-a7c8-1b5fe5537cde',
-                "type": "float",
-                "min": 0,
-                "max": 500.0,
-                "read": true,
-                "write": false,
-                "notify": false
-            }
-        }
-    }
-}
+  name: "com-gnd-default",
+  bluetooth: {
+    serviceId: "8fc1ceca-b162-4401-9607-c8ac21383e4e",
+    characteristics: {
+      pressureSensor: {
+        id: "c14f18ef-4797-439e-a54f-498ba680291d",
+        type: "float",
+        min: 0.0,
+        max: 10.0,
+        read: true,
+        write: false,
+        notify: true,
+      },
+      pressureTarget: {
+        id: "34c242f1-8b5f-4d99-8238-4538eb0b5764",
+        type: "float",
+        min: 0.0,
+        max: 10.0,
+        read: true,
+        write: true,
+        notify: true,
+      },
+      pumpLevel: {
+        id: "d8ad3645-50ad-4f7a-a79d-af0a59469455",
+        type: "float",
+        min: -1.0,
+        max: 1.0,
+        read: true,
+        write: false,
+        notify: true,
+      },
+      boilerTemperature: {
+        id: 0x2a1c,
+        type: "float",
+        min: 0,
+        max: 200,
+        read: true,
+        write: false,
+        notify: false,
+      },
+      temperatureTarget: {
+        id: "14da7f12-2faa-47c2-89af-1752098c281b",
+        type: "float",
+        min: 85,
+        max: 99,
+        read: true,
+        write: true,
+        notify: false,
+      },
+      flowRate: {
+        id: "f5ec47c3-b240-49e8-a7c8-1b5fe5537cde",
+        type: "float",
+        min: 0,
+        max: 500.0,
+        read: true,
+        write: false,
+        notify: false,
+      },
+    },
+  },
+};
