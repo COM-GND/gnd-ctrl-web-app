@@ -36,7 +36,7 @@ export default function useComGndModule(
 
   const getFloatValue = (buffer) => {
     if (buffer.byteLength !== 4) {
-      console.error(sensorName, "recevieved malformed value ", buffer);
+      console.error(sensorName, "received malformed value ", buffer);
       return null;
     }
     let value = null;
@@ -79,9 +79,9 @@ export default function useComGndModule(
 
         gattActionIsInProgress.current = false;
 
-        if (sensorName == "boilerTemperature") {
+        if (sensorName == "flowRate") {
           const debug = true;
-          //console.log("update temp", floatValue);
+          console.log("update flowRate", floatValue);
         }
 
         return floatValue;
@@ -176,7 +176,11 @@ export default function useComGndModule(
         // const comGndBtService = await comGndBtServer.getPrimaryService(serviceId);
 
         if (comGndBtService && !btCharacteristic) {
-          console.log("getCharacteristic", characteristics[sensorName].id);
+          console.log(
+            "getCharacteristic",
+            sensorName,
+            characteristics[sensorName].id
+          );
           const characteristic = await comGndBtService.getCharacteristic(
             characteristics[sensorName].id
           );
@@ -213,6 +217,12 @@ export default function useComGndModule(
             }
 
             // setBtCharacteristic(characteristic);
+          } else {
+            console.log(
+              "getCharacteristic failed",
+              sensorName,
+              characteristics[sensorName].id
+            );
           }
         }
         console.log(

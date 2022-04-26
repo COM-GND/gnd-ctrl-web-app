@@ -182,6 +182,7 @@ export default function Home() {
                   comGndBtDevice={comGndBtDevice}
                   recipeId={recipeId}
                   recipeData={recipeData}
+                  onHeaderChange={(newHeader) => setHeadingText(newHeader)}
                 />
               </Box>
             )}

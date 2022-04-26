@@ -52,7 +52,7 @@ export default {
         id: "f5ec47c3-b240-49e8-a7c8-1b5fe5537cde",
         type: "float",
         min: 0,
-        max: 500.0,
+        max: 802.0,
         read: true,
         write: false,
         notify: false,

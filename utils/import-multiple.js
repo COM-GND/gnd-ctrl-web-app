@@ -9,25 +9,26 @@ function getDefaults(r) {
 
   r.keys().forEach((key) => {
     const defaultClass = r(key).default;
-    defaultClass.configFile = key;
+    const file = key.indexOf("./") === 0 ? key.substring(2) : key;
+    defaultClass.configFile = file;
     defaultExports.push(defaultClass);
   });
 
   return defaultExports;
 }
 
-export default function importMultiple(path, type = "all") {
+export default function importMultiple(type = "all") {
   //const test = require.context("../profiles/", false, /\.js$/);
   try {
     // note the regex passed her must be static for webpack to transpile
     // see: https://github.com/webpack/webpack/issues/4772
     if (type === "all") {
-      const requireContext = require.context("../profiles/", false, /\.js$/);
+      const requireContext = require.context("../profiles", false, /\.js$/);
       const imported = getDefaults(requireContext);
       return imported;
     } else if (type === "config") {
       const requireContext = require.context(
-        "../profiles/",
+        "../profiles",
         false,
         /config\.js$/
       );
@@ -35,7 +36,7 @@ export default function importMultiple(path, type = "all") {
       return imported;
     } else if (type === "profiler") {
       const requireContext = require.context(
-        "../profiles/",
+        "../profiles",
         false,
         /profiler\.js$/
       );

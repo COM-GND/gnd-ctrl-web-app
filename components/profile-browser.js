@@ -54,7 +54,7 @@ export default function ProfileBrowser({
    * Load Preset profiles recipe configs from /recipes/ dir
    */
   useEffect(async () => {
-    const configs = importMultiple("../profiles/", "config");
+    const configs = importMultiple("config");
     const profilerImports = {};
     if (!configs) {
       return;

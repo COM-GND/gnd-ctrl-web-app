@@ -3,6 +3,7 @@ import { Box, Select, Text, Heading, RangeInput, TextInput } from "grommet";
 import { v4 as uuidv4 } from "uuid";
 
 import { StorageContext } from "../contexts/storage-context";
+import importMultiple from "../utils/import-multiple";
 import RecipeEditorStage from "./recipe-editor-stage";
 
 // NOTE: Using localStorage for easier migration to expo if a native app is ever attempted
@@ -10,30 +11,8 @@ import RecipeEditorStage from "./recipe-editor-stage";
 // localForage could be a compromise if localStorage becomes a performance issue
 // import useLocalStorage from "../hooks/use-local-storage";
 
-const configs = [];
-const profilers = [];
-// Import all of the configs inside of the Profiles directory
-// https://webpack.js.org/guides/dependency-management/#require-context
-function importAll(r) {
-  console.log("r", r, r.id, r.keys());
-
-  return r.keys().forEach((key) => {
-    if (key.includes("config.js")) {
-      const data = r(key).default;
-      data.configFile = key;
-      configs.push(data);
-    } else if (key.includes("profiler.js")) {
-      const profilerClass = r(key).default;
-      profilers.push(profilerClass);
-    }
-  });
-}
-
-importAll(require.context("../profiles/", false, /\.js$/));
-console.log("all configs", configs);
-
 function RecipeEditor({ defaultProfileConfig, onChange, recipeId }) {
-  // console.log("RecipeEditor", defaultProfileConfig);
+  // console.log("RecipeEditor", XXdefaultProfileConfig);
 
   const [profileType, setProfileType] = useState(
     recipeId ? "recipe" : "preset"
@@ -63,6 +42,8 @@ function RecipeEditor({ defaultProfileConfig, onChange, recipeId }) {
 
   const storageContext = useContext(StorageContext);
 
+  const [configs, setConfigs] = useState([]);
+
   const defaultRecipe = Object.assign(
     defaultRecipeProperties,
     defaultProfileConfig
@@ -84,7 +65,8 @@ function RecipeEditor({ defaultProfileConfig, onChange, recipeId }) {
   };
 
   useEffect(() => {
-    console.log("edit first load");
+    const newConfigs = importMultiple("config");
+    setConfigs(newConfigs);
     onChange(recipeData);
   }, []);
 
@@ -179,6 +161,11 @@ function RecipeEditor({ defaultProfileConfig, onChange, recipeId }) {
           onChange={handleRecipeNameChange}
           placeholder="Recipe name"
           value={recipeData?.recipeName}
+          onFocus={(e) => {
+            if (e.target.value == "Untitled Recipe") {
+              e.target.select();
+            }
+          }}
         ></TextInput>
       </Box>
       {recipeData && recipeData.setup && (

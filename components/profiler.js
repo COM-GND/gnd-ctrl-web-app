@@ -4,7 +4,6 @@ import { Box, Button, Grid, Text, Layer, Anchor, Collapsible } from "grommet";
 import useComGndBtIsConnected from "../hooks/use-com-gnd-bt-is-connected";
 import ProfileRunner from "./profile-runner.js";
 import timeAndPressure from "../profiles/time-and-pressure.profiler.js";
-import fiveStagePressureProfile from "../profiles/simple-five-stage.config.js";
 import useComGndModule from "../hooks/use-com-gnd-bt-module";
 import useComGndBtModuleMonitor from "../hooks/use-com-gnd-bt-module-monitor";
 import NodeAddIcon from "../svgs/note_add-24px.svg";
@@ -13,7 +12,6 @@ import RecipeEditor from "./recipe-editor";
 import Slider, { Range } from "rc-slider";
 import Tune from "../svgs/tune-24px.svg";
 import "rc-slider/assets/index.css";
-import useLocalStorage from "../hooks/use-local-storage";
 import { StorageContext } from "../contexts/storage-context";
 
 const Chart = dynamic(() => import("../components/chart"), { ssr: false });
@@ -29,6 +27,7 @@ export default function Profiler({
   onPause = () => {},
   onStop = () => {},
   onEnd = () => {},
+  onHeaderChange = () => {},
 }) {
   const [showNonSsr, setShowNonSsr] = useState(false);
   const [startTime, setStartTime] = useState(0);
@@ -39,7 +38,6 @@ export default function Profiler({
     recipeId ? "recipe" : "preset"
   );
 
-  // console.log('Profiler for', recipeId);
   // see if custom recipe has been saved to local storage and load it.
 
   const storageContext = useContext(StorageContext);
@@ -77,6 +75,13 @@ export default function Profiler({
 
   const [showSaveHistory, setShowSaveHistory] = useState(false);
 
+  const clearHistory = () => {
+    updateSensorDataHistory(() => [{ bars: 0, t: 0 }]);
+    updateProfileDataHistory(() => [{ bars: 0, t: 0 }]);
+    updateFlowDataHistory(() => [{ flow: 0, t: 0 }]);
+    updateTemperatureHistory(() => [{ c: 0, t: 0 }]);
+  };
+
   useEffect(async () => {
     let profileConfigFileName;
     let profileConfigData;
@@ -89,7 +94,13 @@ export default function Profiler({
           : "simple-five-stage.config.js";
 
       console.log("profileConfigFileName", profileConfigFileName);
-      profileConfigData = await import(`../profiles/${profileConfigFileName}`);
+      try {
+        profileConfigData = await import(
+          `../profiles/blooming-espresso.config.js`
+        );
+      } catch (error) {
+        console.log("Error loading profile config:", error.message);
+      }
       data = profileConfigData.default;
       data.configFile = profileConfigFileName;
     } else {
@@ -158,21 +169,21 @@ export default function Profiler({
 
   const [flowRate, setFlowRate] = useState(0);
 
-  let rawFlowRate = useComGndBtModuleMonitor(comGndBtDevice, "flowRate", 100);
+  let rawFlowRate = useComGndBtModuleMonitor(comGndBtDevice, "flowRate", 15);
 
   useEffect(() => {
     console.log("new rawFlowRate", rawFlowRate);
-    let value = rawFlowRate;
+    let value = rawFlowRate ? rawFlowRate : 0;
     let scaledValue = 0;
     let mlPerSec = 0;
     if (value) {
-      // max val us 500 ml per min = 8.33 ml / s
+      // max val us 702 ml per min = 8.33 ml / s
       mlPerSec = value / 60.0;
-      scaledValue = (value / 500.0) * 10;
+      scaledValue = (value / 802.0) * 10;
     }
-    console.log("flow", mlPerSec);
-    setFlowRate(mlPerSec);
-    if (isRunning) {
+    console.log("flow", scaledValue);
+    setFlowRate(value);
+    if (!(pumpLevel === null || pumpLevel === -1)) {
       updateFlowDataHistory((buffer) => {
         const timeStamp = Date.now() - startTime;
         const newBuffer = buffer.concat([{ flow: scaledValue, t: timeStamp }]);
@@ -198,6 +209,7 @@ export default function Profiler({
   // });
 
   //console.log('pumpLevel init', pumpLevel);
+
   const handleRecipeEditorChange = (newRecipeData) => {
     console.log("handleRecipeEditorChange", newRecipeData);
     if (profileRef.current) {
@@ -205,6 +217,7 @@ export default function Profiler({
       const newChartData = profileRef.current.getRecipeTimeSeriesData();
       setRecipeChartData(newChartData);
       setProfileTotalMs(profileRef.current.getTotalMs());
+      onHeaderChange(newRecipeData.recipeName);
       const temp = profileRef.current.getSetupTemperature();
       if (temp) {
         console.log("set temp", temp);
@@ -462,7 +475,7 @@ export default function Profiler({
               </Box>
             </Button>
           )}
-          <Text size="small">{flowRate.toFixed(2)} ml/s</Text>
+          <Text size="small">{flowRate.toFixed(2)} ml/m</Text>
         </Box>
 
         <Box flex={false} basis={"1/3"} justify="center">
@@ -496,8 +509,7 @@ export default function Profiler({
               // initialize the target pressure before beginning
               setPressureTarget(recipeChartData[0].bars);
               setIsRunning(true);
-              updateSensorDataHistory(() => [{ bars: 0, t: 0 }]);
-              updateProfileDataHistory(() => [{ bars: 0, t: 0 }]);
+              clearHistory();
               onStart();
             }}
             onPause={() => {

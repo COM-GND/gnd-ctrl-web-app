@@ -302,14 +302,14 @@ export default function Chart({
           />
         )}
 
-        {flowDataHistory && (
+        {flowDataHistory?.length && (
           <Line
             isAnimationActive={false}
             name="Flow Rate"
             id="flow"
             dataKey="flow"
             data={flowDataHistory}
-            stroke="hsla(0, 0%, 50%, 1)"
+            stroke="red" /*"hsla(0, 0%, 50%, 1)"*/
             dot={false}
           />
         )}
