@@ -170,6 +170,9 @@ export default function Home() {
                     setHeadingText("New Recipe");
                     setView("profiler");
                   }}
+                  onDelete={(recipeData) => {
+                    console.log("delete", recipeData);
+                  }}
                 />
               </Box>
             ) : (

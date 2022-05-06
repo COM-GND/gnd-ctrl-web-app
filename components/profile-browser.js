@@ -9,8 +9,10 @@ import {
   Layer,
   Anchor,
   Collapsible,
+  Menu,
   Heading,
 } from "grommet";
+import { MoreVertical, Trash } from "grommet-icons";
 import { useSwipeable } from "react-swipeable";
 import Swipeable from "./swipeable";
 // import useLocalStorage from "../hooks/use-local-storage";
@@ -40,6 +42,14 @@ export default function ProfileBrowser({
     preventDefaultTouchmoveEvent: true,
     trackMouse: true,
   });
+
+  const handleDelete = (data) => {
+    console.log("delete", data);
+    if (data?.recipeType === "preset") {
+      return;
+    }
+    storageContext.removeValue(`${data.id}:recipe`);
+  };
 
   const storageContext = useContext(StorageContext);
 
@@ -149,32 +159,51 @@ export default function ProfileBrowser({
           console.log("swiped", i, e);
           setSwipedProfileIndex(i);
         }}
+        onSwipedRight={(e) => {
+          if (swipedProfileIndex === i) {
+            setSwipedProfileIndex(null);
+          }
+        }}
         onSwiped={(e) => console.log("swiped", e)}
         key={`profile_${i}`}
       >
         <Box direction="row" justify="stretch">
           <Box flex={true}>
-            <Button
-              style={{
-                display: "block",
-                height: "100%",
-              }}
-              onClick={() => {
-                onOpen(data);
-              }}
+            <Box
+              height="100%"
+              width="100%"
+              background="dark-1"
+              pad="small"
+              overflow="hidden"
+              justify="between"
             >
-              <Box
-                height="100%"
-                width="100%"
-                background="dark-1"
-                pad="small"
-                overflow="hidden"
-                justify="between"
-              >
+              <Box direction="row" justify="between" align="start">
                 <Box>
                   <Text size="small"> {data.recipeName}</Text>
                   <Text size="xsmall">{data.profileName}</Text>
                 </Box>
+                <Box>
+                  <Menu
+                    items={[
+                      { label: "Edit", onClick: () => onOpen(data) },
+                      { label: "Delete", onClick: () => handleDelete(data) },
+                    ]}
+                    dropAlign={{ right: "right", top: "bottom" }}
+                    size="small"
+                    dropProps={{ elevation: "small" }}
+                    icon={<MoreVertical size="small" />}
+                  />
+                </Box>
+              </Box>
+              <Button
+                style={{
+                  display: "block",
+                  height: "100%",
+                }}
+                onClick={() => {
+                  onOpen(data);
+                }}
+              >
                 <Box height="120px">
                   <Chart
                     recipeData={data.previewData}
@@ -182,8 +211,8 @@ export default function ProfileBrowser({
                     timeDomain={data.previewData[data.previewData.length - 1].t}
                   />
                 </Box>
-              </Box>
-            </Button>
+              </Button>
+            </Box>
           </Box>
           <Collapsible open={swipedProfileIndex === i} direction="horizontal">
             <Box
@@ -195,7 +224,14 @@ export default function ProfileBrowser({
               pad="small"
               justify="center"
             >
-              <Button>Delete</Button>
+              <Button
+                size="small"
+                icon={<Trash size="medium" />}
+                onClick={() => {
+                  setSwipedProfileIndex(null);
+                  handleDelete(data);
+                }}
+              />
             </Box>
           </Collapsible>
         </Box>

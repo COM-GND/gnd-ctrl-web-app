@@ -2,240 +2,240 @@ const theme = {
   global: {
     colors: {
       "accent-1": "whitesmoke",
-      "control": "white", // changes the button border color
-      "brand": "whitesmoke",
+      control: "white", // changes the button border color
+      brand: "whitesmoke",
       "dark-1": "hsl(0,0%,6%)",
       "dark-2": "hsl(0,0%,12%)",
-      "dark-3": "hsl(0,0%,18%)"
+      "dark-3": "hsl(0,0%,18%)",
     },
     selected: {
-      background: {light: "whitesmoke", dark: "dark-2"}
+      background: { light: "whitesmoke", dark: "dark-2" },
     },
     spacing: "24px", // effects the size of the slider thumb
     font: {
-      size: '14px',
+      size: "14px",
+    },
+    elevation: {
+      // control the boxshadow
+      dark: {
+        small: "0px 2px 4px rgba(0, 0, 0, 1)",
+      },
     },
     focus: {
       outline: {
-        color: "transparent"
-      }
+        color: "transparent",
+      },
     },
     edgeSize: {
       small: "8px", // the padding for an icon-only button
       medium: "16px",
-      large: "24px"
+      large: "24px",
     },
     breakpoints: {
       //https://grommet-nextjs.herokuapp.com/documentation/grommet/Box?theme=light
       small: {
-        edgeSize: {
-        }
-      }
+        edgeSize: {},
+      },
     },
   },
   button: {
     default: {
       font: {
-        weight: 400 /* doesn't seem to have any effect */
+        weight: 400 /* doesn't seem to have any effect */,
       },
       color: {
-        dark: "white"
+        dark: "white",
       },
       extend: {
-        "font-weight": "500 !important"
+        "font-weight": "500 !important",
       },
     },
     secondary: {
       font: {
-        weight: 400
-      }
+        weight: 400,
+      },
     },
     border: {
       color: "black",
       width: "0px",
-      radius: "1px"
+      radius: "1px",
     },
     size: {
       small: {
         border: {
-          radius: "1px"
+          radius: "1px",
         },
         pad: {
-          horizontal: "xsmall"
-        }
+          horizontal: "xsmall",
+        },
       },
       medium: {
         border: {
-          radius: "1px"
-        }
+          radius: "1px",
+        },
       },
       large: {
         border: {
-          radius: "1px"
-        }
-      }
-    }
+          radius: "1px",
+        },
+      },
+    },
   },
   heading: {
     level: {
-      "1": {
-        "font": {},
-        "small": {
-          "size": "34px",
-          "height": "40px",
-          "maxWidth": "816px"
+      1: {
+        font: {},
+        small: {
+          size: "34px",
+          height: "40px",
+          maxWidth: "816px",
         },
-        "medium": {
-          "size": "50px",
-          "height": "56px",
-          "maxWidth": "1200px"
+        medium: {
+          size: "50px",
+          height: "56px",
+          maxWidth: "1200px",
         },
-        "large": {
-          "size": "82px",
-          "height": "88px",
-          "maxWidth": "1968px"
+        large: {
+          size: "82px",
+          height: "88px",
+          maxWidth: "1968px",
         },
-        "xlarge": {
-          "size": "114px",
-          "height": "120px",
-          "maxWidth": "2736px"
-        }
+        xlarge: {
+          size: "114px",
+          height: "120px",
+          maxWidth: "2736px",
+        },
       },
-      "2": {
-        "font": {},
-        "small": {
-          "size": "26px",
-          "height": "32px",
-          "maxWidth": "624px"
+      2: {
+        font: {},
+        small: {
+          size: "26px",
+          height: "32px",
+          maxWidth: "624px",
         },
-        "medium": {
-          "size": "34px",
-          "height": "40px",
-          "maxWidth": "816px"
+        medium: {
+          size: "34px",
+          height: "40px",
+          maxWidth: "816px",
         },
-        "large": {
-          "size": "50px",
-          "height": "56px",
-          "maxWidth": "1200px"
+        large: {
+          size: "50px",
+          height: "56px",
+          maxWidth: "1200px",
         },
-        "xlarge": {
-          "size": "66px",
-          "height": "72px",
-          "maxWidth": "1584px"
-        }
+        xlarge: {
+          size: "66px",
+          height: "72px",
+          maxWidth: "1584px",
+        },
       },
-      "3": {
-        "font": {},
-        "small": {
-          "size": "16px",
-          "height": "1.25em",
-          "maxWidth": "528px"
+      3: {
+        font: {},
+        small: {
+          size: "16px",
+          height: "1.25em",
+          maxWidth: "528px",
         },
-        "medium": {
-          "size": "26px",
-          "height": "32px",
-          "maxWidth": "624px"
+        medium: {
+          size: "26px",
+          height: "32px",
+          maxWidth: "624px",
         },
-        "large": {
-          "size": "34px",
-          "height": "40px",
-          "maxWidth": "816px"
+        large: {
+          size: "34px",
+          height: "40px",
+          maxWidth: "816px",
         },
-        "xlarge": {
-          "size": "42px",
-          "height": "48px",
-          "maxWidth": "1008px"
-        }
+        xlarge: {
+          size: "42px",
+          height: "48px",
+          maxWidth: "1008px",
+        },
       },
-      "4": {
-        "font": {},
-        "small": {
-          "size": "14px",
-          "height": "1.25em",
-          "maxWidth": "432px"
+      4: {
+        font: {},
+        small: {
+          size: "14px",
+          height: "1.25em",
+          maxWidth: "432px",
         },
-        "medium": {
-          "size": "18px",
-          "height": "24px",
-          "maxWidth": "432px"
+        medium: {
+          size: "18px",
+          height: "24px",
+          maxWidth: "432px",
         },
-        "large": {
-          "size": "18px",
-          "height": "24px",
-          "maxWidth": "432px"
+        large: {
+          size: "18px",
+          height: "24px",
+          maxWidth: "432px",
         },
-        "xlarge": {
-          "size": "18px",
-          "height": "24px",
-          "maxWidth": "432px"
-        }
+        xlarge: {
+          size: "18px",
+          height: "24px",
+          maxWidth: "432px",
+        },
       },
-      "5": {
-        "font": {},
-        "small": {
-          "size": "16px",
-          "height": "22px",
-          "maxWidth": "384px"
+      5: {
+        font: {},
+        small: {
+          size: "16px",
+          height: "22px",
+          maxWidth: "384px",
         },
-        "medium": {
-          "size": "16px",
-          "height": "22px",
-          "maxWidth": "384px"
+        medium: {
+          size: "16px",
+          height: "22px",
+          maxWidth: "384px",
         },
-        "large": {
-          "size": "16px",
-          "height": "22px",
-          "maxWidth": "384px"
+        large: {
+          size: "16px",
+          height: "22px",
+          maxWidth: "384px",
         },
-        "xlarge": {
-          "size": "16px",
-          "height": "22px",
-          "maxWidth": "384px"
-        }
+        xlarge: {
+          size: "16px",
+          height: "22px",
+          maxWidth: "384px",
+        },
       },
-      "6": {
-        "font": {},
-        "small": {
-          "size": "14px",
-          "height": "20px",
-          "maxWidth": "336px"
+      6: {
+        font: {},
+        small: {
+          size: "14px",
+          height: "20px",
+          maxWidth: "336px",
         },
-        "medium": {
-          "size": "14px",
-          "height": "20px",
-          "maxWidth": "336px"
+        medium: {
+          size: "14px",
+          height: "20px",
+          maxWidth: "336px",
         },
-        "large": {
-          "size": "14px",
-          "height": "20px",
-          "maxWidth": "336px"
+        large: {
+          size: "14px",
+          height: "20px",
+          maxWidth: "336px",
         },
-        "xlarge": {
-          "size": "14px",
-          "height": "20px",
-          "maxWidth": "336px"
-        }
-      }
-    }
+        xlarge: {
+          size: "14px",
+          height: "20px",
+          maxWidth: "336px",
+        },
+      },
+    },
   },
   rangeInput: {
-    thumb:{
-
-    },
+    thumb: {},
 
     track: {
       extend: {
         // "border-radius": '4px'
       },
-      lower: {
-
-      },
+      lower: {},
       upper: {
-        opacity: .5
-      }
-    
-    }
-  }
-}
+        opacity: 0.5,
+      },
+    },
+  },
+};
 
-export {theme as default};
+export { theme as default };

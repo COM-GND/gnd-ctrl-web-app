@@ -37,6 +37,16 @@ function StorageContextProvider(props) {
     return storedValue;
   };
 
+  const removeStoredValue = async (key) => {
+    console.log("removeStoredValue", key);
+    await store.remove(key);
+    const newCache = Object.assign({}, cache);
+    if (newCache && newCache?.[key]) {
+      delete newCache[key];
+    }
+    updateCache(newCache);
+  };
+
   const value = {
     store,
     cache,
@@ -53,10 +63,13 @@ function StorageContextProvider(props) {
       if (key in cache) {
         return cache[key];
       } else {
-        // if value is not in cache, call method to pull from cache. 
-        // The state will be updated and the new value will be available in cache on next render. 
+        // if value is not in cache, call method to pull from cache.
+        // The state will be updated and the new value will be available in cache on next render.
         getStoredValue(key, value);
       }
+    },
+    removeValue: (key) => {
+      removeStoredValue(key);
     },
   };
 
